@@ -25,7 +25,7 @@ body{
 }
 
 .menu-button{
-    display: block;
+    display: block; /*lægger sig ovenpå hinanden istedetfor ved siden af hinanden*/
     width: 100%;
     padding: 10px;
     margin-bottom: 8px;
@@ -37,10 +37,14 @@ body{
     cursor: pointer;
 }
 
-.menu-button.active {
+.menu-button.active { /*sammensat selector, rammer de elemeter der har begge klasser samtidig*/
     background-color: #f0efff;
     color: #5d4dff;
     font-weight: bold;
 }
 
 /* Main content, right of sidebar*/
+.content{
+    margin-left: 220px;
+    padding: 30px;
+}
