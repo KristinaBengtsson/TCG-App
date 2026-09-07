@@ -1,4 +1,6 @@
-/* General for the whole page */
+/* ===================================== */
+/* STYLES ALL PAGES                      */
+/* ===================================== */
 body{
     margin: 0; /*fjerner standrad margin*/
     background-color: #f6f8fc;
@@ -42,9 +44,204 @@ body{
     color: #5d4dff;
     font-weight: bold;
 }
+/*Profile box at the bottom of the sidebar*/
+.profile-box {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid #e7ebf3;
+    border-radius: 12px;
+    padding: 10px;
+}
+
+.avatar-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: #6b5cff;
+    color: white;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-name {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.profile-info {
+    font-size: 12px;
+    color: #7c879b;
+}
+
 
 /* Main content, right of sidebar*/
 .content{
-    margin-left: 220px;
+    margin-left: 240px;
     padding: 30px;
+}
+
+/*Top of the page: heading on the left, buttons on the right*/
+.topbar{
+    display: flex; /*Gør at text-delen og knap-delen placeres ved siden af hinanden istedetfor under hinanden.*/
+    justify-content: space-between; /*skubber top text og knapperne helt ud til hver siden side*/
+    align-items: flex-start; /*justere til toppen af topbaren*/
+}
+
+.top-text h1{
+    margin-bottom: 5px;
+}
+
+.top-text p {
+    color: #7c879b;
+    margin-top: 0;
+}
+
+.top-button {
+    background-color: white;
+    border: 1px solid #e7ebf3;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-weight: bold;
+    margin-left: 10px;
+    cursor: pointer;
+    transition: background-color 0.15s ease; /*farven glider let mellem de 2 farver*/
+}
+
+.top-button:hover {
+    background-color: #f0efff;
+    color: #5d4dff;
+}
+
+.top-button.primary {
+    background-color: #6b5cff;
+    color: white;
+    border: none;
+}
+
+.top-button.primary:hover {
+    background-color: #5a4ce0;
+}
+
+.top-button.outline{
+    background-color: white;
+    color: #6b5cff;
+    border: 1px solid #6b5cff;
+}
+
+.top-button.outline:hover {
+    background-color: #f0efff;
+    color: #5d4dff;
+    border-color: #5d4dff;
+}
+
+/* The actual bar showing percentage (used everywhere) */
+.bar-background {
+    background-color: #eff2f8;
+    border-radius: 10px;
+    height: 10px;
+    width: 100%;
+}
+
+.bar-fill {
+    border-radius: 10px;
+    height: 10px;
+}
+
+/* Different colors for different progress bars */
+.bar-yellow { background-color: #f1b94a; }
+.bar-green  { background-color: #25b987; }
+.bar-red { background-color: #6b5cff; }
+.bar-purple    { background-color: #ef6262; }
+
+
+/* ===================================== */
+/* STYLES FOR THE MASTERSETS PAGE        */
+/* ===================================== */
+
+/* The grid holding all the masterset cards */
+.sets-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+/* Each masterset card (image + progress info) */
+.set-card {
+    width: calc(70% - 8px);
+    background-color: white;
+    border: 1px solid #e7ebf3;
+    margin-bottom: 15px;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+/* The colored area at the top of the card, showing the set name */
+.set-image {
+    height: 100px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    color: white;
+}
+
+/* A color for each set (replace with real card images later if you want) */
+.set-image-baseset       { background: linear-gradient(135deg, #f1b94a, #e67e22); }
+.set-image-shiningfates   { background: linear-gradient(135deg, #25b987, #1a8f6b); }
+.set-image-destinedrivals         { background: linear-gradient(135deg, #ef6262, #c23e3e); }
+.set-image-phantasmalflames{ background: linear-gradient(135deg, #6b5cff, #4a3ecf); }
+
+.set-title h3 {
+    margin: 0 0 4px 0;
+    font-size: 26px;
+}
+
+.set-title p {
+    margin: 0;
+    font-size: 14px;
+    opacity: 0.85;
+}
+
+/* "COMPLETE" badge shown on finished sets */
+.set-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background-color: white;
+    color: #25b987;
+    font-size: 13px;
+    font-weight: bold;
+    padding: 6px 14px;
+    border-radius: 999px;
+}
+
+/* Progress section under the image */
+.set-progress {
+    padding: 15px;
+}
+
+.set-progress .percent {
+    font-weight: bold;
+}
+
+.progress-bottom {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #7c879b;
+    margin-top: 8px;
+}
+
+.progress-bottom a {
+    color: #6b5cff;
+    font-weight: bold;
+    text-decoration: none;
 }
