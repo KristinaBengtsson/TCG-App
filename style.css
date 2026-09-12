@@ -245,3 +245,140 @@ body{
     font-weight: bold;
     text-decoration: none;
 }
+
+
+/* ===================================== */
+/* STYLES FOR THE COLLECTION PAGE        */
+/* ===================================== */
+
+/* Filter tabs above the table (All, Pokémon, MTG, Foil Only) */
+.filter-tabs {
+    display: flex; /*Placerer de 4 tabs ved siden af hinanden*/
+    gap: 8px; /*Afstand mellem elementer i en flex container*/
+    margin-bottom: 20px;
+}
+
+.filter-tab {
+    background-color: white;
+    border: 1px solid #e7ebf3;
+    border-radius: 10px; /*Afrundet hjørner*/
+    padding: 8px 14px;
+    font-size: 14px;
+    font-weight: 650;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.filter-tab.active {
+    background-color: #f0efff;
+    color: #5d4dff;
+    border-color: #f0efff;
+}
+
+/* The table holding all the cards in the collection */
+.collection-table {
+    background-color: white;
+    border: 1px solid #e7ebf3;
+    border-radius: 15px;
+    overflow: hidden; /*Sikrer at header rækkens indhold ikke stikker ud over de runde hjørner*/
+}
+
+/* The grey header row with column titles */
+.collection-header-row {
+    display: flex;
+    align-items: center;
+    padding: 14px 20px;
+    border-bottom: 1px solid #e7ebf3;
+    font-size: 12px;
+    font-weight: bold;
+    color: #7c879b;
+    letter-spacing: 0.03em; /*Skaber lidt ekstra lift mellem bogstaverne*/
+}
+
+/* Each card row in the table */
+.collection-row {
+    display: flex;
+    align-items: center;
+    padding: 14px 20px;
+    border-bottom: 1px solid #e7ebf3;
+}
+
+.collection-row:last-child { /*fungerer liodt som hover, man baseret på position, den rammer kun det sidste element i rækken*/
+    border-bottom: 0; /*Fjerner den nederste streg på den allersidste række*/
+}
+
+/* Column widths, shared between header and rows */
+.col-card {
+    flex: 1; /*Tager al plads der er tilovers*/
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.col-set, /*Når flere selectors er adskilt med komma, betyder det at reglerne skal anvendes på alle disse klasser*/
+.col-qty,
+.col-added,
+.col-current,
+.col-change {
+    width: 90px; /*Fast bredde på kolonnen*/
+    text-align: right; /*Tal mod højre så de står pænt under hinanden*/
+}
+
+/* Small colored square placeholder for the card image */
+.card-thumb {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    flex-shrink: 0;
+}
+
+/*Card thumbnails*/
+.thumb-1 { background: linear-gradient(135deg, #f1b94a, #ef6262); }
+.thumb-2 { background: linear-gradient(135deg, #172033, #4a3ecf); }
+.thumb-3 { background: linear-gradient(135deg, #6cc3ff, #25b987); }
+.thumb-4 { background: linear-gradient(135deg, #6b5cff, #ef6262); }
+.thumb-5 { background: linear-gradient(135deg, #f1b94a, #6b5cff); }
+.thumb-6 { background: linear-gradient(135deg, #8b7cff, #6cc3ff); }
+
+.card-name {
+    font-weight: 800;
+    font-size: 14px;
+}
+
+.card-badges {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+/* Small badge showing the card's rarity */
+.rarity-badge {
+    font-size: 11px;
+    font-weight: bold;
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid;
+}
+
+.rarity-ultra  { color: #6b5cff; border-color: #6b5cff; }
+.rarity-secret { color: #e6a521; border-color: #f1b94a; }
+.rarity-rare   { color: #7c879b; border-color: #c7cee0; }
+
+/* Small "FOIL" tag shown next to the card name */
+.foil-badge {
+    font-size: 10px;
+    font-weight: bold;
+    color: #25b987;
+    border: 1px solid #25b987;
+    border-radius: 999px;
+    padding: 1px 6px;
+    margin-left: 4px;
+    vertical-align: middle;
+}
+
+/* Card condition text (NM, LP, MP) */
+.condition-text {
+    font-size: 12px;
+    color: #7c879b;
+}
