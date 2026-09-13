@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="da">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile | MasterCollect</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+
+  <div class="logo">
+    MasterCollect
+  </div>
+
+  <button class="menu-button">
+    Dashboard
+  </button>
+
+  <button class="menu-button">
+    Collection
+  </button>
+
+  <button class="menu-button">
+    Master Sets
+  </button>
+
+  <button class="menu-button">
+    Wishlist
+  </button>
+
+  <!-- PROFIL -->
+  <div class="profile-box profile-active" id="profileButton">
+
+    <div class="avatar-circle">
+      S
+    </div>
+
+    <div>
+      <div class="profile-name">
+        Sofus
+      </div>
+
+      <div class="profile-info">
+        247 cards
+      </div>
+    </div>
+
+  </div>
+
+</aside>
+
+
+<!-- MAIN CONTENT -->
+<main class="content">
+
+  <div class="profile-header">
+
+    <div>
+      <h1>My profile</h1>
+      <p>Manage your profile and view your collection statistics.</p>
+    </div>
+
+    <button class="top-button primary" id="editProfileButton">
+      Edit profile
+    </button>
+
+  </div>
+
+
+  <!-- PROFILKORT -->
+  <section class="profile-page-card">
+
+    <div class="profile-big-avatar">
+      S
+    </div>
+
+    <div class="profile-main-info">
+
+      <h2 id="profileDisplayName">
+        Sofus
+      </h2>
+
+      <p class="profile-username">
+        @sofuscollector
+      </p>
+
+      <p class="profile-description">
+        Pokémon card collector and MasterCollect user.
+      </p>
+
+      <p class="member-since">
+        Member since 2026
+      </p>
+
+    </div>
+
+  </section>
+
+
+  <!-- STATISTIK -->
+  <section>
+
+    <h2 class="profile-section-title">
+      Collection overview
+    </h2>
+
+    <div class="profile-stats">
+
+      <div class="profile-stat-card">
+                    <span class="profile-stat-label">
+                        Cards
+                    </span>
+
+        <strong>
+          247
+        </strong>
+
+        <span>
+                        139 unique
+                    </span>
+      </div>
+
+
+      <div class="profile-stat-card">
+
+                    <span class="profile-stat-label">
+                        Collection value
+                    </span>
+
+        <strong>
+          5,012 kr.
+        </strong>
+
+        <span>
+                        Total estimated value
+                    </span>
+
+      </div>
+
+
+      <div class="profile-stat-card">
+
+                    <span class="profile-stat-label">
+                        Completed sets
+                    </span>
+
+        <strong>
+          4
+        </strong>
+
+        <span>
+                        of 6 tracked
+                    </span>
+
+      </div>
+
+
+      <div class="profile-stat-card">
+
+                    <span class="profile-stat-label">
+                        Wishlist
+                    </span>
+
+        <strong>
+          4
+        </strong>
+
+        <span>
+                        Wanted cards
+                    </span>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- FAVORIT SET -->
+  <section class="profile-section">
+
+    <h2 class="profile-section-title">
+      Favorite set
+    </h2>
+
+    <div class="favorite-set-card">
+
+      <div>
+                    <span class="favorite-small-text">
+                        Pokémon
+                    </span>
+
+        <h3>
+          Scarlet & Violet — 151
+        </h3>
+
+        <p>
+          142 of 165 cards collected
+        </p>
+      </div>
+
+      <div class="favorite-progress">
+
+                    <span>
+                        86%
+                    </span>
+
+        <div class="bar-background">
+          <div class="bar-fill bar-red" style="width: 86%;"></div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- EDIT PROFILE MODAL -->
+  <div class="profile-modal" id="profileModal">
+
+    <div class="profile-modal-content">
+
+      <div class="modal-header">
+
+        <h2>
+          Edit profile
+        </h2>
+
+        <button id="closeProfileModal">
+          ×
+        </button>
+
+      </div>
+
+      <form id="profileForm">
+
+        <label for="profileName">
+          Name
+        </label>
+
+        <input
+                type="text"
+                id="profileName"
+                value="Sofus"
+        >
+
+
+        <label for="profileUsername">
+          Username
+        </label>
+
+        <input
+                type="text"
+                id="profileUsername"
+                value="sofuscollector"
+        >
+
+
+        <label for="profileBio">
+          Bio
+        </label>
+
+        <textarea
+                id="profileBio"
+                rows="4"
+        >Pokémon card collector and MasterCollect user.</textarea>
+
+
+        <button
+                type="submit"
+                class="top-button primary save-profile-button"
+        >
+          Save changes
+        </button>
+
+      </form>
+
+    </div>
+
+  </div>
+
+</main>
+
+
+<script src="script.js"></script>
+
+</body>
+</html>

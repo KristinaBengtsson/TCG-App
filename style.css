@@ -61,6 +61,8 @@ body{
 
     padding: 10px;
     box-sizing: border-box;
+
+    cursor: pointer;
 }
 
 /* Den lilla cirkel med S */
@@ -476,4 +478,307 @@ body{
 .dashboard-progress-percent {
     color: #7c879b;
     font-weight: bold;
+}
+
+/* ===================================== */
+/* STYLES FOR THE PROFILE PAGE           */
+/* ===================================== */
+
+
+/* Toppen af profilsiden */
+.profile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 25px;
+}
+
+.profile-header h1 {
+    margin-bottom: 5px;
+}
+
+.profile-header p {
+    margin-top: 0;
+    color: #7c879b;
+}
+
+
+/* Den store profilboks */
+.profile-page-card {
+    background-color: white;
+    border: 1px solid #e7ebf3;
+    border-radius: 15px;
+
+    padding: 25px;
+    margin-bottom: 25px;
+
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+
+/* Stor lilla profilcirkel */
+.profile-big-avatar {
+    width: 80px;
+    height: 80px;
+    min-width: 80px;
+
+    border-radius: 50%;
+
+    background-color: #6b5cff;
+    color: white;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 30px;
+    font-weight: bold;
+}
+
+
+/* Navn */
+.profile-main-info h2 {
+    margin: 0 0 5px 0;
+    font-size: 24px;
+}
+
+
+/* @brugernavn */
+.profile-username {
+    color: #6b5cff;
+    font-size: 14px;
+    margin: 0 0 12px 0;
+}
+
+
+/* Profilbeskrivelse */
+.profile-description {
+    color: #7c879b;
+    margin: 0 0 8px 0;
+}
+
+
+/* Member since */
+.member-since {
+    color: #7c879b;
+    font-size: 12px;
+    margin: 0;
+}
+
+
+/* ===================================== */
+/* PROFILE STATISTICS                    */
+/* ===================================== */
+
+.profile-section-title {
+    font-size: 18px;
+    margin-bottom: 15px;
+}
+
+
+.profile-stats {
+    display: flex;
+    gap: 16px;
+}
+
+
+/* Hver statistikboks */
+.profile-stat-card {
+    flex: 1;
+
+    background-color: white;
+    border: 1px solid #e7ebf3;
+    border-radius: 15px;
+
+    padding: 18px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+
+.profile-stat-label {
+    color: #7c879b;
+    font-size: 13px;
+}
+
+
+.profile-stat-card strong {
+    font-size: 26px;
+}
+
+
+.profile-stat-card span:last-child {
+    color: #7c879b;
+    font-size: 12px;
+}
+
+
+/* ===================================== */
+/* FAVORITE SET                          */
+/* ===================================== */
+
+.profile-section {
+    margin-top: 30px;
+}
+
+
+.favorite-set-card {
+    background-color: white;
+    border: 1px solid #e7ebf3;
+    border-radius: 15px;
+
+    padding: 20px;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+
+.favorite-set-card h3 {
+    margin: 6px 0;
+}
+
+
+.favorite-set-card p {
+    color: #7c879b;
+    font-size: 13px;
+    margin: 0;
+}
+
+
+.favorite-small-text {
+    color: #6b5cff;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+
+.favorite-progress {
+    width: 220px;
+}
+
+
+.favorite-progress span {
+    display: block;
+    text-align: right;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+
+/* ===================================== */
+/* EDIT PROFILE POPUP                    */
+/* ===================================== */
+
+/* Popup er skjult som standard */
+.profile-modal {
+    display: none;
+
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    background-color: rgba(23, 32, 51, 0.4);
+
+    align-items: center;
+    justify-content: center;
+
+    z-index: 1000;
+}
+
+
+/* JavaScript tilføjer denne klasse */
+.profile-modal.show {
+    display: flex;
+}
+
+
+/* Den hvide popup-boks */
+.profile-modal-content {
+    width: 400px;
+
+    background-color: white;
+    border: 1px solid #e7ebf3;
+    border-radius: 15px;
+
+    padding: 25px;
+}
+
+
+/* Toppen af popup */
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    margin-bottom: 20px;
+}
+
+
+.modal-header h2 {
+    margin: 0;
+}
+
+
+/* X-knappen */
+.modal-header button {
+    background-color: transparent;
+    border: none;
+
+    font-size: 25px;
+    cursor: pointer;
+
+    color: #7c879b;
+}
+
+
+/* Labels */
+.profile-modal label {
+    display: block;
+
+    margin-top: 15px;
+    margin-bottom: 6px;
+
+    font-size: 13px;
+    font-weight: bold;
+}
+
+
+/* Inputfelter */
+.profile-modal input,
+.profile-modal textarea {
+    width: 100%;
+
+    padding: 10px;
+
+    border: 1px solid #e7ebf3;
+    border-radius: 10px;
+
+    box-sizing: border-box;
+
+    font-family: Arial, sans-serif;
+}
+
+
+/* Når man klikker i et felt */
+.profile-modal input:focus,
+.profile-modal textarea:focus {
+    outline: none;
+    border-color: #6b5cff;
+}
+
+
+/* Save Changes */
+.save-profile-button {
+    width: 100%;
+    margin-top: 20px;
+    margin-left: 0;
 }
