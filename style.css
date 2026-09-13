@@ -8,16 +8,16 @@ body{
     font-family: Arial, sans-serif; /*fonts første og andet valg*/
 }
 
-/* Sidebar */
-.sidebar{
-    width: 200px;
-    background-color: white;
-    border-right: 1px solid #e7ebf3; /*tynd blå streg i højre side af sidebaren*/
-    padding: 20px; /*luft indeni sidebaren*/
-    position: fixed; /*låses fast på skærmen*/
-    top: 0; /*position den låses fast i*/
-    left: 0; /*position den låses fast i*/
-    height: 100%; /*fylder hele skærmens højde*/
+.sidebar {
+    width: 240px;
+    height: 100vh;
+    padding: 20px;
+
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    box-sizing: border-box;
 }
 
 .logo{
@@ -44,42 +44,64 @@ body{
     color: #5d4dff;
     font-weight: bold;
 }
-/*Profile box at the bottom of the sidebar*/
 .profile-box {
     position: absolute;
     bottom: 20px;
-    left: 20px;
-    right: 20px;
+    left: 12px;
+
+    width: 200px;
+
     display: flex;
     align-items: center;
     gap: 10px;
+
+    background-color: white;
     border: 1px solid #e7ebf3;
     border-radius: 12px;
+
     padding: 10px;
+    box-sizing: border-box;
 }
 
+/* Den lilla cirkel med S */
 .avatar-circle {
     width: 36px;
     height: 36px;
+    min-width: 36px;
+
     border-radius: 50%;
+
     background-color: #6b5cff;
     color: white;
+
     font-weight: bold;
+
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
+
+/* Teksten ved siden af cirklen */
+.profile-text {
+    display: flex;
+    flex-direction: column;
+}
+
+
+/* Sofus J. */
 .profile-name {
     font-size: 14px;
-    font-weight: bold;
+    font-weight: normal;
+    color: #172033;
 }
 
+
+/* 247 cards */
 .profile-info {
-    font-size: 12px;
-    color: #7c879b;
+    font-size: 14px;
+    color: #172033;
 }
-
 
 /* Main content, right of sidebar*/
 .content{
@@ -244,4 +266,214 @@ body{
     color: #6b5cff;
     font-weight: bold;
     text-decoration: none;
+}
+
+/* ===================================== */
+/* STYLES FOR THE DASHBOARD PAGE         */
+/* ===================================== */
+
+/* De 4 statistikbokse øverst */
+.stats-container {
+    display: flex;
+    gap: 16px;
+    margin-top: 25px;
+    margin-bottom: 20px;
+}
+
+.stat-box {
+    flex: 1;
+    background-color: white;
+    border: 1px solid #e7ebf3;
+    border-radius: 15px;
+    padding: 18px;
+}
+
+.stat-title {
+    color: #7c879b;
+    font-size: 13px;
+    margin-bottom: 8px;
+}
+
+.stat-number {
+    font-size: 26px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.stat-info {
+    color: #7c879b;
+    font-size: 12px;
+}
+
+.stat-positive {
+    color: #25b987;
+}
+
+
+/* Nederste del af dashboard */
+.dashboard-container {
+    display: flex;
+    gap: 20px;
+}
+
+
+/* Fælles styling for de to store bokse */
+.dashboard-box {
+    background-color: white;
+    border: 1px solid #e7ebf3;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+
+/* Recently Added */
+.recently-added {
+    flex: 2;
+}
+
+
+/* Set Progress */
+.set-progress-box {
+    flex: 1;
+}
+
+
+/* Overskrift inde i dashboard-boksene */
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 18px 20px;
+
+    border-bottom: 1px solid #e7ebf3;
+}
+
+.dashboard-header h2 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.dashboard-header a {
+    color: #6b5cff;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+
+/* ===================================== */
+/* RECENTLY ADDED CARDS                  */
+/* ===================================== */
+
+.card-list {
+    padding: 5px 15px;
+}
+
+.card-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+
+    padding: 15px 5px;
+
+    border-bottom: 1px solid #e7ebf3;
+}
+
+.card-row:last-child {
+    border-bottom: none;
+}
+
+
+/* Midlertidigt billede */
+.card-image {
+    width: 50px;
+    height: 60px;
+
+    background-color: #f0efff;
+
+    border-radius: 8px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 22px;
+}
+
+
+/* Kortets navn + info */
+.card-details {
+    flex: 1;
+}
+
+.card-name {
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+.card-info {
+    color: #7c879b;
+    font-size: 12px;
+}
+
+
+/* Pris */
+.card-price {
+    font-weight: bold;
+    min-width: 80px;
+    text-align: right;
+}
+
+
+/* Prisændring */
+.card-change {
+    min-width: 55px;
+    text-align: right;
+
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.price-up {
+    color: #25b987;
+}
+
+.price-down {
+    color: #ef6262;
+}
+
+
+/* ===================================== */
+/* SET PROGRESS ON DASHBOARD             */
+/* ===================================== */
+
+.dashboard-progress-list {
+    padding: 20px;
+}
+
+.dashboard-progress-item {
+    margin-bottom: 24px;
+}
+
+.dashboard-progress-item:last-child {
+    margin-bottom: 0;
+}
+
+.dashboard-progress-top {
+    display: flex;
+    justify-content: space-between;
+
+    margin-bottom: 8px;
+
+    font-size: 13px;
+}
+
+.dashboard-progress-name {
+    font-weight: bold;
+}
+
+.dashboard-progress-percent {
+    color: #7c879b;
+    font-weight: bold;
 }
