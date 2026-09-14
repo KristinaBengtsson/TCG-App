@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>MasterCollect - mastersets</title>
     <link rel="stylesheet" href="style.css" />
+    <script src="js/mastersets.js" defer></script>
 </head>
 <body>
 <!--MENU -->
@@ -14,14 +15,18 @@
     <button class="menu-button">Collection</button>
     <button class="menu-button active">Master Sets</button>
     <button class="menu-button">Wishlist</button>
-</div>
 
+
+<!-- TEST BUTTON FOR THE CARD COUNTER (TRÆNING) -->
+<button class="menu-button hover-purple" id="add-card-test">+ Add test card</button>
+
+</div>
 <!-- PROFILE BOX BOTTOM SIDEBAR -->
 <div class="profile-box">
     <div class="avatar-circle">S</div>
     <div>
         <div class="profilename">Sofus K.</div>
-        <div class="profile-cards">247 cards</div>
+        <div class="profile-cards" id="card-count-text">247 cards</div>
     </div>
 </div>
 <!-- MAIN CONTENT -->
@@ -32,8 +37,8 @@
             <p>Track your progress toward completing full sets.</p>
         </div>
         <div>
-            <button class="top-button outline">+ Add official set</button>
-            <button class="top-button primary">+ Create custom set</button>
+            <button class="top-button outline hover-purple" id="officialSet-button">+ Add official set</button>
+            <button class="top-button outline hover-purple" id="customSet-button">+ Create custom set</button>
         </div>
     </div>
 
