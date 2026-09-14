@@ -1,45 +1,454 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="da">
+
 <head>
     <meta charset="UTF-8">
-    <title>MasterCollect - dashboard</title>
-    <link rel="stylesheet" href="style.css" />
+
+    <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>MasterCollect</title>
+
+    <link rel="stylesheet" href="style.css">
 </head>
+
+
 <body>
 
-<!--MENU -->
-<div class="sidebar">
-    <div class="logo">MasterCollect</div>
+<!-- SIDEBAR -->
+<aside class="sidebar">
 
-    <button class="menu-button active">Dashboard</button>
-    <button class="menu-button">Collection</button>
-    <button class="menu-button">Master Sets</button>
-    <button class="menu-button">Wishlist</button>
-</div>
-<!-- PROFILE BOX BOTTOM SIDEBAR -->
-<div class="profile-box">
-    <div class="avatar-circle">S</div>
-    <div>
-        <div class="profilename">Sofus K.</div>
-        <div class="profile-cards">247 cards</div>
+    <div class="logo">
+        MasterCollect
     </div>
-</div>
-<!-- MAIN CONTENT -->
-<div class="content">
-    <div class ="topbar">
-        <div class ="top-text">
-            <h1>Good evening, Sofus</h1>
-            <p>Here is your collection at a glance.</p>
+
+    <button class="menu-button active">
+        Dashboard
+    </button>
+
+    <button class="menu-button">
+        Collection
+    </button>
+
+    <button class="menu-button">
+        Master Sets
+    </button>
+
+    <button class="menu-button">
+        Wishlist
+    </button>
+
+
+    <!-- PROFIL -->
+    <div class="profile-box" id="profileButton">
+
+        <div class="avatar-circle">
+            S
         </div>
+
         <div>
-            <button class="top-button outline">+ Add card</button>
+
+            <div class="profile-name">
+                Sofus
+            </div>
+
+            <div class="profile-info">
+                247 cards
+            </div>
+
         </div>
+
     </div>
 
-<!-- STAT BOXES -->
+</aside>
 
 
-</div>
+<!-- MAIN CONTENT -->
+<main class="content">
 
+
+    <!-- TOP -->
+    <div class="topbar">
+
+        <div class="top-text">
+
+            <h1>
+                Good evening, Sofus.
+            </h1>
+
+            <p>
+                Here is your collection at a glance.
+            </p>
+
+        </div>
+
+
+        <div>
+
+            <button class="top-button primary">
+                + Add card
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- STATISTIK -->
+    <div class="stats-container">
+
+        <div class="stat-box">
+
+            <div class="stat-title">
+                Total value
+            </div>
+
+            <div class="stat-number">
+                5,012 kr.
+            </div>
+
+            <div class="stat-info stat-positive">
+                +100 kr. all time
+            </div>
+
+        </div>
+
+
+        <div class="stat-box">
+
+            <div class="stat-title">
+                Cards
+            </div>
+
+            <div class="stat-number">
+                247
+            </div>
+
+            <div class="stat-info">
+                139 unique
+            </div>
+
+        </div>
+
+
+        <div class="stat-box">
+
+            <div class="stat-title">
+                Sets complete
+            </div>
+
+            <div class="stat-number">
+                4
+            </div>
+
+            <div class="stat-info">
+                of 6 tracked
+            </div>
+
+        </div>
+
+
+        <div class="stat-box">
+
+            <div class="stat-title">
+                Wishlist
+            </div>
+
+            <div class="stat-number">
+                4
+            </div>
+
+            <div class="stat-info">
+                44 kr. estimated value
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- DASHBOARD NEDERST -->
+    <div class="dashboard-container">
+
+
+        <!-- RECENTLY ADDED -->
+        <div class="dashboard-box recently-added">
+
+            <div class="dashboard-header">
+
+                <h2>
+                    Recently Added
+                </h2>
+
+                <a href="#">
+                    View collection →
+                </a>
+
+            </div>
+
+
+            <div class="card-list">
+
+
+                <!-- CHARIZARD -->
+                <div class="card-row">
+
+                    <div class="card-image">
+                        🔥
+                    </div>
+
+                    <div class="card-details">
+
+                        <div class="card-name">
+                            Charizard ex
+                        </div>
+
+                        <div class="card-info">
+                            SV · 4/102 · Near Mint
+                        </div>
+
+                    </div>
+
+                    <div class="card-price">
+                        35 kr.
+                    </div>
+
+                    <div class="card-change price-up">
+                        +8.4%
+                    </div>
+
+                </div>
+
+
+                <!-- MEWTWO -->
+                <div class="card-row">
+
+                    <div class="card-image">
+                        🟣
+                    </div>
+
+                    <div class="card-details">
+
+                        <div class="card-name">
+                            Mewtwo V
+                        </div>
+
+                        <div class="card-info">
+                            PRI · 177/280 · Near Mint
+                        </div>
+
+                    </div>
+
+                    <div class="card-price">
+                        275 kr.
+                    </div>
+
+                    <div class="card-change price-down">
+                        -6.0%
+                    </div>
+
+                </div>
+
+
+                <!-- UMBREON -->
+                <div class="card-row">
+
+                    <div class="card-image">
+                        🌙
+                    </div>
+
+                    <div class="card-details">
+
+                        <div class="card-name">
+                            Umbreon
+                        </div>
+
+                        <div class="card-info">
+                            Evolving Skies · Holo Rare
+                        </div>
+
+                    </div>
+
+                    <div class="card-price">
+                        890 kr.
+                    </div>
+
+                    <div class="card-change price-up">
+                        +2.1%
+                    </div>
+
+                </div>
+
+
+                <!-- PIKACHU -->
+                <div class="card-row">
+
+                    <div class="card-image">
+                        ⚡
+                    </div>
+
+                    <div class="card-details">
+
+                        <div class="card-name">
+                            Pikachu
+                        </div>
+
+                        <div class="card-info">
+                            Base Set · Unlimited
+                        </div>
+
+                    </div>
+
+                    <div class="card-price">
+                        120 kr.
+                    </div>
+
+                    <div class="card-change">
+                        0.0%
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- SET PROGRESS -->
+        <div class="dashboard-box set-progress-box">
+
+            <div class="dashboard-header">
+
+                <h2>
+                    Set Progress
+                </h2>
+
+                <a href="#">
+                    All sets →
+                </a>
+
+            </div>
+
+
+            <div class="dashboard-progress-list">
+
+
+                <!-- BASE SET -->
+                <div class="dashboard-progress-item">
+
+                    <div class="dashboard-progress-top">
+
+                            <span class="dashboard-progress-name">
+                                Base Set
+                            </span>
+
+                        <span class="dashboard-progress-percent">
+                                76%
+                            </span>
+
+                    </div>
+
+                    <div class="bar-background">
+
+                        <div
+                                class="bar-fill bar-yellow"
+                                style="width: 76%;">
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ASCENDED HEROES -->
+                <div class="dashboard-progress-item">
+
+                    <div class="dashboard-progress-top">
+
+                            <span class="dashboard-progress-name">
+                                Ascended Heroes
+                            </span>
+
+                        <span class="dashboard-progress-percent">
+                                4%
+                            </span>
+
+                    </div>
+
+                    <div class="bar-background">
+
+                        <div
+                                class="bar-fill bar-red"
+                                style="width: 4%;">
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- OBSIDIAN FLAMES -->
+                <div class="dashboard-progress-item">
+
+                    <div class="dashboard-progress-top">
+
+                            <span class="dashboard-progress-name">
+                                Obsidian Flames
+                            </span>
+
+                        <span class="dashboard-progress-percent">
+                                100%
+                            </span>
+
+                    </div>
+
+                    <div class="bar-background">
+
+                        <div
+                                class="bar-fill bar-green"
+                                style="width: 100%;">
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- 151 -->
+                <div class="dashboard-progress-item">
+
+                    <div class="dashboard-progress-top">
+
+                            <span class="dashboard-progress-name">
+                                151
+                            </span>
+
+                        <span class="dashboard-progress-percent">
+                                63%
+                            </span>
+
+                    </div>
+
+                    <div class="bar-background">
+
+                        <div
+                                class="bar-fill bar-purple"
+                                style="width: 63%;">
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</main>
+<script src="script.js"></script>
 </body>
 </html>
