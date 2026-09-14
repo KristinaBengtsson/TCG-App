@@ -1,98 +1,44 @@
 <!DOCTYPE html>
-<html lang="da">
+<html lang=en>
 
 <head>
     <meta charset="UTF-8">
 
-    <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1.0"
-    >
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MasterCollect</title>
-
     <link rel="stylesheet" href="style.css">
+    <script src="script.js"></script>
 </head>
-
-
 <body>
 
-<!-- SIDEBAR -->
-<aside class="sidebar">
+<!--SIDEBAR -->
+<div class="sidebar">
+    <div class="logo">MasterCollect</div>
 
-    <div class="logo">
-        MasterCollect
+    <button class="menu-button active">Dashboard</button>
+    <button class="menu-button">Collection</button>
+    <button class="menu-button">Master Sets</button>
+    <button class="menu-button">Wishlist</button>
+</div>
+<!-- PROFILE BOX BOTTOM SIDEBAR -->
+<div class="profile-box" id="profileButton">
+    <div class="avatar-circle">S</div>
+    <div>
+        <div class="profile-name">Sofus J.</div>
+        <div class="profile-cards">247 cards</div>
     </div>
-
-    <button class="menu-button active">
-        Dashboard
-    </button>
-
-    <button class="menu-button">
-        Collection
-    </button>
-
-    <button class="menu-button">
-        Master Sets
-    </button>
-
-    <button class="menu-button">
-        Wishlist
-    </button>
-
-
-    <!-- PROFIL -->
-    <div class="profile-box" id="profileButton">
-
-        <div class="avatar-circle">
-            S
-        </div>
-
-        <div>
-
-            <div class="profile-name">
-                Sofus
-            </div>
-
-            <div class="profile-info">
-                247 cards
-            </div>
-
-        </div>
-
-    </div>
-
-</aside>
-
-
+</div>
 <!-- MAIN CONTENT -->
-<main class="content">
-
-
+<div class="content">
     <!-- TOP -->
-    <div class="topbar">
-
-        <div class="top-text">
-
-            <h1>
-                Good evening, Sofus.
-            </h1>
-
-            <p>
-                Here is your collection at a glance.
-            </p>
-
+    <div class ="topbar">
+        <div class ="top-text">
+            <h1>Good evening, Sofus</h1>
+            <p>Here is your collection at a glance.</p>
         </div>
-
-
         <div>
-
-            <button class="top-button primary">
-                + Add card
-            </button>
-
+            <button class="top-button outline">+ Add card</button>
         </div>
-
     </div>
 
 
@@ -299,7 +245,10 @@
                             Base Set · Unlimited
                         </div>
 
-                    </div>
+<!-- STAT BOXES -->
+
+
+</div>
 
                     <div class="card-price">
                         120 kr.
@@ -449,6 +398,5 @@
     </div>
 
 </main>
-<script src="script.js"></script>
 </body>
 </html>
