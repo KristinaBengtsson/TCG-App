@@ -4,10 +4,12 @@
     <meta charset="UTF-8">
     <title>MasterCollect - collection</title>
     <link rel="stylesheet" href="style.css" />
+    <script src="js/sidebar.js" defer></script>
     <script src="js/collection.js" defer></script>
 </head>
 <body>
-<!--MENU -->
+
+<!--SIDEBAR -->
 <div class="sidebar">
     <div class="logo">MasterCollect</div>
 
@@ -18,11 +20,11 @@
 </div>
 
 <!-- PROFILE BOX BOTTOM SIDEBAR -->
-<div class="profile-box">
+<div class="profile-box" id="profileButton">
     <div class="avatar-circle">S</div>
     <div>
-        <div class="profilename">Sofus K.</div>
-        <div class="profile-cards">247 cards</div>
+        <div class="profile-name">Sofus J.</div>
+        <div class="profile-cards" id="card-count-text">247 cards</div>
     </div>
 </div>
 
@@ -174,10 +176,7 @@
             <div class="col-current">Kr. 810</div>
             <div class="col-change change up">+12.5%</div>
         </div>
-
     </div>
-
 </div>
-
 </body>
 </html>

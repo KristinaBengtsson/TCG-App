@@ -1,62 +1,38 @@
 <!DOCTYPE html>
-<html lang="da">
+<html lang="en">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Profile | MasterCollect</title>
+  <title>MasterCollect - profile</title>
   <link rel="stylesheet" href="style.css">
+    <script src="js/sidebar.js" defer></script>
+    <script src="js/mastersets.js" defer></script>
 </head>
-
 <body>
 
 <!-- SIDEBAR -->
-<aside class="sidebar">
+<div class="sidebar">
+  <div class="logo">MasterCollect</div>
 
-  <div class="logo">
-    MasterCollect
-  </div>
+  <button class="menu-button">Dashboard</button>
+  <button class="menu-button">Collection</button>
+  <button class="menu-button">Master Sets</button>
+  <button class="menu-button">Wishlist</button>
+</div>
 
-  <button class="menu-button">
-    Dashboard
-  </button>
-
-  <button class="menu-button">
-    Collection
-  </button>
-
-  <button class="menu-button">
-    Master Sets
-  </button>
-
-  <button class="menu-button">
-    Wishlist
-  </button>
-
-  <!-- PROFIL -->
+  <!-- PROFILE BOX BOTTOM SIDEBAR -->
   <div class="profile-box profile-active" id="profileButton">
-
-    <div class="avatar-circle">
-      S
-    </div>
-
+    <div class="avatar-circle">S</div>
     <div>
-      <div class="profile-name">
-        Sofus
-      </div>
-
-      <div class="profile-info">
-        247 cards
-      </div>
+      <div class="profile-name">Sofus J.</div>
+      <div class="profile-cards">247 cards</div>
     </div>
-
-  </div>
-
-</aside>
+</div>
 
 
 <!-- MAIN CONTENT -->
-<main class="content">
+<div class="content">
 
   <div class="profile-header">
 
@@ -278,17 +254,10 @@
         >
           Save changes
         </button>
-
       </form>
 
     </div>
-
   </div>
-
-</main>
-
-
-<script src="script.js"></script>
-
+</div>
 </body>
 </html>
