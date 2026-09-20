@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang=en>
+<html lang=en xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8">
@@ -23,9 +23,9 @@
 
 <!-- PROFILE BOX BOTTOM SIDEBAR -->
 <div class="profile-box" id="profileButton">
-    <div class="avatar-circle">S</div>
+    <div class="avatar-circle" th:text="${#strings.toUpperCase(#strings.substring(user.username,0,1))}">S</div>
     <div>
-        <div class="profile-name">Sofus J.</div>
+        <div class="profile-name" th:text="${#strings.capitalize(user.username)}">Sofus J.</div>
         <div class="profile-cards">247 cards</div>
     </div>
 </div>
@@ -34,7 +34,7 @@
     <!-- TOP -->
     <div class ="topbar">
         <div class ="top-text">
-            <h1>Good evening, Sofus</h1>
+            <h1>Good evening, <span th:text="${#strings.capitalize(user.username)}">Sofus</span></h1>
             <p>Here is your collection at a glance.</p>
         </div>
         <div>
