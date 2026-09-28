@@ -1,3 +1,8 @@
+
+// Denne kode styrede menuknapperne og profilknappen med hårdkodede .html-adresser.
+// Fjernet fordi sidebar.js nu klarer navigationen via routes i PageController (/dashboard, /collection osv.),
+// og denne kode overskrev de nye adresser, så man endte på en side, der ikke findes.
+/*
 document.addEventListener("DOMContentLoaded", () => {
     const pages = {
         Dashboard: "dashboard.html",
@@ -19,3 +24,5 @@ document.addEventListener("DOMContentLoaded", () => {
         window.location.href = "profile.html";
     });
 });
+
+ */

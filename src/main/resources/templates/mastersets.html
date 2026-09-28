@@ -13,10 +13,10 @@
 <div class="sidebar">
     <div class="logo">MasterCollect</div>
 
-    <button class="menu-button">Dashboard</button>
-    <button class="menu-button">Collection</button>
+    <button class="menu-button hover-purple">Dashboard</button>
+    <button class="menu-button hover-purple">Collection</button>
     <button class="menu-button active">Master Sets</button>
-    <button class="menu-button">Wishlist</button>
+    <button class="menu-button hover-purple">Wishlist</button>
 
 <!-- TEST BUTTON FOR THE CARD COUNTER (TRÆNING) -->
 <button class="menu-button hover-purple" id="add-card-test">+ Add test card</button>
@@ -25,10 +25,10 @@
 
 <!-- PROFILE BOX BOTTOM SIDEBAR -->
 <div class="profile-box" id="profileButton">
-    <div class="avatar-circle">S</div>
+    <div class="avatar-circle" th:text="${#strings.toUpperCase(#strings.substring(user.username,0,1))}">S</div>
     <div>
-        <div class="profile-name">Sofus J.</div>
-        <div class="profile-cards" id="card-count-text">247 cards</div>
+        <div class="profile-name" th:text="${#strings.capitalize(user.username)}">Sofus J.</div>
+        <div class="profile-cards">247 cards</div>
     </div>
 </div>
 

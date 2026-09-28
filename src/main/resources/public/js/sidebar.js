@@ -11,19 +11,19 @@ document.addEventListener("DOMContentLoaded", function () {
             switch (pageName) {
 
                 case "Dashboard":
-                    window.location.href = "dashboard.html";
+                    window.location.href = "/dashboard";
                     break;
 
                 case "Collection":
-                    window.location.href = "collection.html";
+                    window.location.href = "/collection";
                     break;
 
                 case "Master Sets":
-                    window.location.href = "mastersets.html";
+                    window.location.href = "/mastersets";
                     break;
 
                 case "Wishlist":
-                    window.location.href = "wishlist.html";
+                    window.location.href = "/wishlist";
                     break;
             }
 
