@@ -12,25 +12,9 @@
 </head>
 <body>
 
-<!--SIDEBAR -->
-<div class="sidebar">
-    <div class="logo">MasterCollect</div>
-    <button class="menu-button hover-purple">Søg kort</button>
+<!-- SIDEBAR + PROFILBOKS hentes fra fragments/sidebar.html -->
+<div th:replace="~{fragments/sidebar.html :: sidebar('dashboard')}"></div>
 
-    <button class="menu-button active">Dashboard</button>
-    <button class="menu-button hover-purple">Collection</button>
-    <button class="menu-button hover-purple">Master Sets</button>
-    <button class="menu-button hover-purple">Wishlist</button>
-</div>
-
-<!-- PROFILE BOX BOTTOM SIDEBAR -->
-<div class="profile-box" id="profileButton">
-    <div class="avatar-circle" th:text="${#strings.toUpperCase(#strings.substring(session.user.username,0,1))}">S</div>
-    <div>
-        <div class="profile-name" th:text="${#strings.capitalize(session.user.username)}">Sofus J.</div>
-        <div class="profile-cards">247 cards</div>
-    </div>
-</div>
 <!-- MAIN CONTENT -->
 <div class="content">
     <!-- TOP -->

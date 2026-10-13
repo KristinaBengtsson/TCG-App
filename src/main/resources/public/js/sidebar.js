@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             switch (pageName) {
 
-                case "Søg kort":
+                case "Search Cards":
                     window.location.href = "/cards";
                     break;
 
@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         profileButton.addEventListener("click", function () {
 
-            window.location.href = "profile.html";
+            window.location.href = "/profile";
 
         });
 

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="da">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,7 +11,7 @@
     <script src="/js/cards.js" defer></script>
 </head>
 <body class="card-search-page">
-<nav class="sidebar" aria-label="Hovedmenu">
+<!--<nav class="sidebar" aria-label="Hovedmenu">
     <div class="logo">MasterCollect</div>
     <button class="menu-button hover-purple">Dashboard</button>
     <button class="menu-button hover-purple">Collection</button>
@@ -18,7 +19,9 @@
     <button class="menu-button hover-purple">Master Sets</button>
     <button class="menu-button hover-purple">Wishlist</button>
     <a class="login-link" href="/login.html">Log ind</a>
-</nav>
+</nav>-->
+<div th:replace="~{fragments/sidebar.html :: sidebar('cards')}"></div>
+
 <main class="content">
     <header class="topbar">
         <div class="top-text">

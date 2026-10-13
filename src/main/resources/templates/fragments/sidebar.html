@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- SIDEBAR som fragment. Skrevet ét sted og hentet ind på alle sider med th:replace.
+     activePage fortæller hvilken knap der skal være markeret, fx 'dashboard'. -->
+<th:block th:fragment="sidebar(activePage)">
+    <div class="sidebar">
+        <div class="logo">MasterCollect</div>
+        <button class="menu-button" th:classappend="${activePage == 'dashboard'} ? 'active' : 'hover-purple'">Dashboard</button>
+        <button class="menu-button" th:classappend="${activePage == 'collection'} ? 'active' : 'hover-purple'">Collection</button>
+        <button class="menu-button" th:classappend="${activePage == 'mastersets'} ? 'active' : 'hover-purple'">Master Sets</button>
+        <button class="menu-button" th:classappend="${activePage == 'wishlist'} ? 'active' : 'hover-purple'">Wishlist</button>
+        <button class="menu-button" th:classappend="${activePage == 'cards'} ? 'active' : 'hover-purple'">Search Cards</button>
+    </div>
+
+    <!-- PROFILE BOX: vises kun hvis man er logget ind -->
+    <div class="profile-box" id="profileButton" th:if="${session.user != null}">
+        <div class="avatar-circle" th:text="${#strings.toUpperCase(#strings.substring(session.user.username,0,1))}">S</div>
+        <div>
+            <div class="profile-name" th:text="${#strings.capitalize(session.user.username)}">Sofus J.</div>
+            <div class="profile-cards">247 cards</div>
+        </div>
+    </div>
+
+    <!-- Gæster får i stedet et link til login -->
+    <a class="profile-box" href="/login" th:if="${session.user == null}">Log ind</a>
+</th:block>
+</body>
+</html>

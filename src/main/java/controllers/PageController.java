@@ -16,7 +16,7 @@ public class PageController {
                 ctx.render("dashboard.html");
             } else {
                 //hvis ikke der er en bruger logget ind sendes man tilbage til login siden
-                ctx.redirect("/login.html");
+                ctx.redirect("/login");
             }
         });
         config.routes.get("/collection", ctx -> collection(ctx));
@@ -25,6 +25,7 @@ public class PageController {
         config.routes.get("/cards", ctx -> {
             ctx.render("cards.html");
         });
+        config.routes.get("/profile", ctx -> profile(ctx));
     }
     public static void collection(Context ctx){
         User user = ctx.sessionAttribute("user");
@@ -53,5 +54,13 @@ public class PageController {
             ctx.redirect("/login.html");
         }
     }
-
+    public static void profile(Context ctx){
+        User user = ctx.sessionAttribute("user");
+        if(user != null){
+            ctx.attribute("user", user);
+            ctx.render("profile.html");
+        }else{
+            ctx.redirect("/login");
+        }
+    }
 }

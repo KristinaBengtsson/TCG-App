@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head>
   <meta charset="UTF-8">
@@ -7,30 +7,11 @@
   <title>MasterCollect - profile</title>
   <link rel="stylesheet" href="style.css">
     <script src="js/sidebar.js" defer></script>
-    <script src="js/mastersets.js" defer></script>
 </head>
 <body>
 
-<!-- SIDEBAR -->
-<div class="sidebar">
-  <div class="logo">MasterCollect</div>
-    <button class="menu-button hover-purple">Søg kort</button>
-
-  <button class="menu-button">Dashboard</button>
-  <button class="menu-button">Collection</button>
-  <button class="menu-button">Master Sets</button>
-  <button class="menu-button">Wishlist</button>
-</div>
-
-<!-- PROFILE BOX BOTTOM SIDEBAR -->
-<div class="profile-box" id="profileButton">
-    <div class="avatar-circle" th:text="${#strings.toUpperCase(#strings.substring(user.username,0,1))}">S</div>
-    <div>
-        <div class="profile-name" th:text="${#strings.capitalize(user.username)}">Sofus J.</div>
-        <div class="profile-cards">247 cards</div>
-    </div>
-</div>
-
+<!-- SIDEBAR + PROFILBOKS hentes fra fragments/sidebar.html -->
+<div th:replace="~{fragments/sidebar.html :: sidebar('profile')}"></div>
 
 <!-- MAIN CONTENT -->
 <div class="content">
@@ -50,20 +31,23 @@
 
 
   <!-- PROFILKORT -->
-  <section class="profile-page-card">
+  <section class="profile-page-card" th:if="${session.user != null}">
 
-    <div class="profile-big-avatar">
-      S
+    <div class="profile-big-avatar"
+         th:text="${#strings.toUpperCase(#strings.substring(session.user.username,0,1))}">
+        S
     </div>
 
     <div class="profile-main-info">
 
-      <h2 id="profileDisplayName">
-        Sofus
+      <h2 id="profileDisplayName"
+          th:text="${#strings.capitalize(session.user.username)}">
+          Sofus
       </h2>
 
-      <p class="profile-username">
-        @sofuscollector
+      <p class="profile-username"
+         th:text="${session.user.email}">
+          sofus@test.dk
       </p>
 
       <p class="profile-description">
@@ -78,7 +62,7 @@
 
   </section>
 
-
+    <!-- Eksempeldata: hentes ikke fra databasen endnu -->
   <!-- STATISTIK -->
   <section>
 
@@ -157,7 +141,7 @@
 
   </section>
 
-
+    <!-- Eksempeldata: hentes ikke fra databasen endnu -->
   <!-- FAVORIT SET -->
   <section class="profile-section">
 
@@ -235,10 +219,10 @@
         <input
                 type="text"
                 id="profileUsername"
-                value="sofuscollector"
+                th:value="${session.user.username}"
         >
 
-
+          <!-- Eksempeldata: hentes ikke fra databasen endnu -->
         <label for="profileBio">
           Bio
         </label>
