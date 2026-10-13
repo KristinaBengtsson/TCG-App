@@ -1,0 +1,932 @@
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000..16b61c5
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1,3 @@
++/target/
++/.idea/
++*.iml
+diff --git a/README.md b/README.md
+index a2841d1..029353f 100755
+--- a/README.md
++++ b/README.md
+@@ -1,2 +1,42 @@
+ # TCG-App
+ En webbaseret (og på sigt mobilvenlig) applikation til samlere af Trading Card Games (TCG),  Pokémon-kort i fokus.
++
++## Pokémon-kortsøgning
++
++Start `Main` med Java 17+ og Maven-afhængighederne fra `pom.xml`. Åbn
++http://localhost:7070/cards, eller vælg **Søg kort** i appens menu.
++Søgningen er tilgængelig for både gæster og logget-ind brugere.
++
++- Søg efter kortnavn, sætnavn, kortnummer, kort-ID, Pokédex-nummer eller kunstner.
++- Vælg kortsprog, fx engelsk eller japansk. Søg med navnet på det valgte sprog.
++- En tom søgning viser kataloget, 24 kort ad gangen. Klik på et kort for detaljer.
++- Kort og billeder kommer fra [TCGdex](https://tcgdex.dev), uden API-nøgle.
++
++TCGdex har forskellig [dækning pr. sprog](https://tcgdex.dev/status).
++Der er ingen garanti for alle verdens udgivelser, oversættelser, billeder eller
++trykvarianter. Dansk er ikke et understøttet kortsprog. Søgning foretages i ét
++kortsprog ad gangen; appen oversætter ikke søgeord. Denne integration søger i
++kataloget; den gemmer endnu ikke kort i brugerens samling og viser ikke priser.
++
++### Opbygning
++
++`PokemonCardService` bruger Javas `HttpClient` til TCGdex REST API. API-kald har
++forbindelses- og svartimeout. `PokemonCardController` stiller følgende ruter til rådighed:
++
++- `GET /api/pokemon/cards?q=Pikachu&field=name&language=en&page=1`
++- `GET /api/pokemon/cards/base1-4?language=en`
++
++Søgefelter: `name`, `set.name`, `localId`, `id`, `dexId`, `illustrator`.
++Resultater sorteres stabilt efter kort-ID. TCGdex leverer ikke et samlet antal
++resultater i dette svar; efter en fuld side kan den næste derfor være tom.
++Succesfulde svar må caches i browseren i fem minutter. Fejl caches ikke.
++
++### Test
++
++Kør `mvn test`. Testene bruger en lokal HTTP-server og kræver ikke adgang til
++TCGdex. De dækker søgeparametre, Unicode, validering, kortdetaljer, timeouts,
++API-fejl og de offentlige Javalin-ruter.
++
++Manuel kontrol: søg efter `Pikachu` (engelsk), `ピカチュウ` (japansk),
++Pokédex-nummer `25`, og en tekst uden match. Prøv næste/forrige side, åbn et kort,
++og kontrollér fejlbeskeden uden netforbindelse.
+diff --git a/pom.xml b/pom.xml
+index 1a427ea..2e32255 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -15,6 +15,12 @@
+     </properties>
+ 
+     <dependencies>
++        <dependency>
++            <groupId>org.junit.jupiter</groupId>
++            <artifactId>junit-jupiter</artifactId>
++            <version>5.11.4</version>
++            <scope>test</scope>
++        </dependency>
+         <!--Javalin-->
+         <dependency>
+             <groupId>io.javalin</groupId>
+@@ -29,4 +35,14 @@
+         </dependency>
+     </dependencies>
+ 
+-</project>
+\ No newline at end of file
++    <build>
++        <plugins>
++            <plugin>
++                <groupId>org.apache.maven.plugins</groupId>
++                <artifactId>maven-surefire-plugin</artifactId>
++                <version>3.5.2</version>
++            </plugin>
++        </plugins>
++    </build>
++
++</project>
+diff --git a/src/main/java/Main.java b/src/main/java/Main.java
+index 96b5854..5362c65 100644
+--- a/src/main/java/Main.java
++++ b/src/main/java/Main.java
+@@ -1,5 +1,6 @@
+ import controllers.UserController;
+ import controllers.PageController;
++import controllers.PokemonCardController;
+ import io.javalin.Javalin;
+ import io.javalin.rendering.template.JavalinThymeleaf;
+ import org.thymeleaf.TemplateEngine;
+@@ -20,10 +21,11 @@ public class Main {
+             //Lader controllen registrere sine egne routes
+             UserController.setRoutes(config);
+             PageController.setRoutes(config);
++            PokemonCardController.setRoutes(config);
+             //Arkiverer statiske filer
+             config.staticFiles.add("/public"); //til login.html, style.css, js/
+             config.fileRenderer(new JavalinThymeleaf(templateEngine)); //til dashboard.html
+        //Starter serven på port  (7070)
+         }).start(7070);
+     }
+-}
+\ No newline at end of file
++}
+diff --git a/src/main/java/controllers/PageController.java b/src/main/java/controllers/PageController.java
+index 424d23a..185498b 100644
+--- a/src/main/java/controllers/PageController.java
++++ b/src/main/java/controllers/PageController.java
+@@ -22,6 +22,9 @@ public class PageController {
+         config.routes.get("/collection", ctx -> collection(ctx));
+         config.routes.get("/mastersets", ctx -> mastersets(ctx));
+         config.routes.get("/wishlist", ctx -> wishlist(ctx));
++        config.routes.get("/cards", ctx -> {
++            ctx.render("cards.html");
++        });
+     }
+     public static void collection(Context ctx){
+         User user = ctx.sessionAttribute("user");
+@@ -51,4 +54,4 @@ public class PageController {
+         }
+     }
+ 
+-}
+\ No newline at end of file
++}
+diff --git a/src/main/java/controllers/PokemonCardController.java b/src/main/java/controllers/PokemonCardController.java
+new file mode 100644
+index 0000000..3bcb7f3
+--- /dev/null
++++ b/src/main/java/controllers/PokemonCardController.java
+@@ -0,0 +1,65 @@
++package controllers;
++
++import io.javalin.config.JavalinConfig;
++import io.javalin.http.Context;
++import services.PokemonCardService;
++
++import java.io.IOException;
++import java.net.http.HttpTimeoutException;
++
++public class PokemonCardController {
++    public static void setRoutes(JavalinConfig config) {
++        setRoutes(config, new PokemonCardService());
++    }
++
++    public static void setRoutes(JavalinConfig config, PokemonCardService service) {
++        config.routes.get("/api/pokemon/cards", ctx -> respond(ctx, () -> {
++            String page = parameter(ctx, "page", "1");
++            if (!page.matches("[0-9]{1,5}")) {
++                throw new IllegalArgumentException("Ugyldigt sidenummer.");
++            }
++            return service.search(parameter(ctx, "language", "en"), ctx.queryParam("q"),
++                    parameter(ctx, "field", "name"), Integer.parseInt(page));
++        }));
++        config.routes.get("/api/pokemon/cards/{id}", ctx -> respond(ctx,
++                () -> service.card(parameter(ctx, "language", "en"), ctx.pathParam("id"))));
++    }
++
++    private static String parameter(Context ctx, String name, String fallback) {
++        String value = ctx.queryParam(name);
++        return value == null ? fallback : value;
++    }
++
++    private static void respond(Context ctx, ApiCall call) {
++        ctx.header("Cache-Control", "no-store");
++        try {
++            String json = call.execute();
++            ctx.header("Cache-Control", "private, max-age=300")
++                    .contentType("application/json; charset=utf-8").result(json);
++        } catch (IllegalArgumentException e) {
++            error(ctx, 400, e.getMessage());
++        } catch (HttpTimeoutException e) {
++            error(ctx, 504, "Kortdatabasen svarer for langsomt. Prøv igen.");
++        } catch (PokemonCardService.ApiException e) {
++            if (e.statusCode() == 404) {
++                error(ctx, 404, "Kortet blev ikke fundet på det valgte sprog.");
++            } else {
++                error(ctx, 502, "Kortdatabasen er midlertidigt utilgængelig. Prøv igen om lidt.");
++            }
++        } catch (InterruptedException e) {
++            Thread.currentThread().interrupt();
++            error(ctx, 503, "Søgningen blev afbrudt. Prøv igen.");
++        } catch (IOException e) {
++            error(ctx, 502, "Kunne ikke hente kort fra kortdatabasen. Prøv igen.");
++        }
++    }
++
++    private static void error(Context ctx, int status, String message) {
++        ctx.status(status).contentType("text/plain; charset=utf-8").result(message);
++    }
++
++    @FunctionalInterface
++    private interface ApiCall {
++        String execute() throws IOException, InterruptedException;
++    }
++}
+diff --git a/src/main/java/services/PokemonCardService.java b/src/main/java/services/PokemonCardService.java
+new file mode 100644
+index 0000000..f453d22
+--- /dev/null
++++ b/src/main/java/services/PokemonCardService.java
+@@ -0,0 +1,101 @@
++package services;
++
++import java.io.IOException;
++import java.net.URI;
++import java.net.URLEncoder;
++import java.net.http.HttpClient;
++import java.net.http.HttpRequest;
++import java.net.http.HttpResponse;
++import java.nio.charset.StandardCharsets;
++import java.time.Duration;
++import java.util.Set;
++
++/** Læser kort fra TCGdex. Ingen API-nøgle er nødvendig. */
++public class PokemonCardService {
++    public static final int PAGE_SIZE = 24;
++    private static final Set<String> LANGUAGES = Set.of(
++            "en", "fr", "es", "it", "pt", "pt-br", "pt-pt", "de", "nl", "pl", "ru",
++            "ja", "ko", "zh-tw", "zh-cn", "id", "th");
++    private final HttpClient client;
++    private final URI baseUri;
++    private final Duration timeout;
++
++    public PokemonCardService() {
++        this(HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build(),
++                URI.create("https://api.tcgdex.net/v2/"), Duration.ofSeconds(15));
++    }
++
++    // Gør det muligt at teste mod en lokal HTTP-server.
++    PokemonCardService(HttpClient client, URI baseUri, Duration timeout) {
++        this.client = client;
++        this.baseUri = baseUri;
++        this.timeout = timeout;
++    }
++
++    public String search(String language, String query, String field, int page)
++            throws IOException, InterruptedException {
++        validateLanguage(language);
++        if (!Set.of("name", "id", "localId", "set.name", "illustrator", "dexId").contains(field)) {
++            throw new IllegalArgumentException("Ugyldigt søgefelt.");
++        }
++        if (page < 1 || page > 10000) {
++            throw new IllegalArgumentException("Sidenummer skal være mellem 1 og 10000.");
++        }
++        String term = query == null ? "" : query.strip();
++        if (term.length() > 100) {
++            throw new IllegalArgumentException("Søgningen må højst være 100 tegn.");
++        }
++        if (field.equals("dexId") && !term.isEmpty() && !term.matches("[0-9]{1,4}")) {
++            throw new IllegalArgumentException("Pokédex-nummer skal være et tal på højst 4 cifre.");
++        }
++        String path = language + "/cards?pagination:page=" + page
++                + "&pagination:itemsPerPage=" + PAGE_SIZE + "&sort:field=id&sort:order=ASC";
++        if (!term.isEmpty()) {
++            // Et fast præfiks forhindrer, at fx 'not:' tolkes som en anden filtertype.
++            String filter = field.equals("dexId") ? "eq:" : "like:";
++            path += "&" + field + "=" + URLEncoder.encode(filter + term, StandardCharsets.UTF_8);
++        }
++        return get(path);
++    }
++
++    public String card(String language, String id) throws IOException, InterruptedException {
++        validateLanguage(language);
++        if (id == null || !id.matches("[A-Za-z0-9][A-Za-z0-9._-]{0,99}")) {
++            throw new IllegalArgumentException("Ugyldigt kort-ID.");
++        }
++        return get(language + "/cards/" + id);
++    }
++
++    private void validateLanguage(String language) {
++        if (language == null || !LANGUAGES.contains(language)) {
++            throw new IllegalArgumentException("Det valgte kortsprog understøttes ikke.");
++        }
++    }
++
++    private String get(String path) throws IOException, InterruptedException {
++        HttpRequest request = HttpRequest.newBuilder(baseUri.resolve(path))
++                .timeout(timeout).header("Accept", "application/json").GET().build();
++        HttpResponse<String> response = client.send(request,
++                HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
++        if (response.statusCode() != 200) {
++            throw new ApiException(response.statusCode());
++        }
++        if (!response.headers().firstValue("Content-Type").orElse("").contains("application/json")) {
++            throw new IOException("TCGdex returnerede ikke JSON.");
++        }
++        return response.body();
++    }
++
++    public static class ApiException extends IOException {
++        private final int statusCode;
++
++        public ApiException(int statusCode) {
++            super("TCGdex HTTP " + statusCode);
++            this.statusCode = statusCode;
++        }
++
++        public int statusCode() {
++            return statusCode;
++        }
++    }
++}
+diff --git a/src/main/resources/public/cards.css b/src/main/resources/public/cards.css
+new file mode 100644
+index 0000000..bcdf50e
+--- /dev/null
++++ b/src/main/resources/public/cards.css
+@@ -0,0 +1,41 @@
++.card-search-form { display: flex; flex-wrap: wrap; gap: 16px; align-items: end; padding: 24px; background: white; border: 1px solid #e7ebf3; border-radius: 16px; }
++.card-search-form > div { flex: 1 1 150px; }
++.card-search-form .search-query { flex: 2 1 250px; }
++.card-search-form label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; }
++.card-search-form input, .card-search-form select { box-sizing: border-box; width: 100%; min-height: 44px; padding: 10px; border: 1px solid #b6bfd0; border-radius: 8px; background: white; color: #172033; font: inherit; }
++.card-search-page button { cursor: pointer; }
++.search-submit, .search-pagination button, #search-retry, .dialog-close { min-height: 44px; padding: 10px 18px; border: 1px solid #d8dcec; border-radius: 8px; background: white; color: #172033; font: inherit; }
++.search-submit { background: #5d4dff; border-color: #5d4dff; color: white; }
++.card-search-page :focus-visible { outline: 3px solid #5d4dff; outline-offset: 3px; }
++.card-search-page button:disabled { opacity: .45; cursor: default; }
++.search-help, .coverage-note { color: #596579; font-size: 14px; line-height: 1.6; }
++.coverage-note a, .login-link { color: #5040d8; }
++#search-status { min-height: 24px; margin-top: 28px; }
++.search-results { display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); gap: 20px; }
++.search-card { padding: 16px; border: 1px solid #e1e5ef; border-radius: 14px; background: white; color: #172033; text-align: left; font: inherit; transition: box-shadow .15s; }
++.search-card:hover { box-shadow: 0 4px 20px #17203316; }
++.search-card h2 { font-size: 16px; margin: 14px 0 6px; }
++.search-card p { margin: 5px 0; font-size: 13px; color: #596579; overflow-wrap: anywhere; }
++.search-image { aspect-ratio: 245 / 337; display: flex; align-items: center; justify-content: center; background: #f6f8fc; border-radius: 9px; color: #596579; font-size: 14px; }
++.search-image img { width: 100%; height: 100%; object-fit: contain; }
++.search-pagination { display: flex; align-items: center; justify-content: center; gap: 20px; margin-top: 32px; }
++.card-search-page [hidden] { display: none; }
++#card-dialog { width: min(720px, calc(100% - 64px)); max-height: 85vh; overflow-y: auto; padding: 24px; border: 0; border-radius: 16px; color: #172033; }
++#card-dialog::backdrop { background: #17203399; }
++.dialog-close { float: right; }
++.card-detail-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; clear: both; }
++.card-detail-layout dl { margin: 0; }
++.card-detail-layout dt { color: #596579; font-size: 13px; margin-top: 14px; }
++.card-detail-layout dd { margin: 4px 0 0; overflow-wrap: anywhere; }
++@media (max-width: 760px) {
++    .card-search-page .sidebar { position: static; width: 100%; height: auto; display: flex; flex-wrap: wrap; gap: 6px; padding: 16px; }
++    .card-search-page .logo { width: 100%; margin-bottom: 8px; }
++    .card-search-page .menu-button { width: auto; margin: 0; }
++    .card-search-page .login-link { padding: 10px; }
++    .card-search-page .content { margin-left: 0; padding: 20px; }
++    .card-search-page .topbar { display: block; }
++    .card-search-page h1 { font-size: 28px; }
++    .search-results { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
++    .search-card { padding: 10px; }
++    .card-detail-layout { grid-template-columns: 1fr; }
++}
+diff --git a/src/main/resources/public/js/cards.js b/src/main/resources/public/js/cards.js
+new file mode 100644
+index 0000000..06e6dd1
+--- /dev/null
++++ b/src/main/resources/public/js/cards.js
+@@ -0,0 +1,164 @@
++(() => {
++    const form = document.getElementById("card-search-form");
++    const results = document.getElementById("card-results");
++    const status = document.getElementById("search-status");
++    const retry = document.getElementById("search-retry");
++    const pagination = document.querySelector(".search-pagination");
++    const previous = document.getElementById("previous-page");
++    const next = document.getElementById("next-page");
++    const pageLabel = document.getElementById("page-label");
++    const dialog = document.getElementById("card-dialog");
++    const detail = document.getElementById("card-detail");
++    const detailTitle = document.getElementById("card-detail-title");
++    const pageSize = 24;
++    let currentPage = 1;
++    let requestedPage = 1;
++    let activeSearch = { q: "", field: "name", language: "en" };
++    let searchRequest;
++    let detailRequest;
++
++    function element(tag, text, className) {
++        const node = document.createElement(tag);
++        if (text !== undefined) node.textContent = text;
++        if (className) node.className = className;
++        return node;
++    }
++
++    function cardImage(card, quality = "low") {
++        const wrapper = element("div", undefined, "search-image");
++        const fallback = () => wrapper.replaceChildren(element("span", "Billede mangler"));
++        // API-data indsættes som tekst; billeder må kun hentes fra TCGdex.
++        if (typeof card.image !== "string" || !card.image.startsWith("https://assets.tcgdex.net/")) {
++            fallback();
++            return wrapper;
++        }
++        const image = document.createElement("img");
++        image.alt = card.name || "Pokémon-kort";
++        image.loading = "lazy";
++        image.width = 245;
++        image.height = 337;
++        image.src = `${card.image}/${quality}.webp`;
++        image.addEventListener("error", fallback, { once: true });
++        wrapper.append(image);
++        return wrapper;
++    }
++
++    async function fetchJson(url, controller) {
++        const timer = setTimeout(() => controller.abort("timeout"), 20000);
++        try {
++            const response = await fetch(url, { signal: controller.signal });
++            if (!response.ok) {
++                const message = await response.text();
++                throw new Error(message || "Kunne ikke hente kort. Prøv igen.");
++            }
++            return await response.json();
++        } catch (error) {
++            if (controller.signal.reason === "timeout") {
++                throw new Error("Søgningen tog for lang tid. Prøv igen.");
++            }
++            if (error instanceof TypeError || error instanceof SyntaxError) {
++                throw new Error("Kunne ikke hente kort. Tjek forbindelsen og prøv igen.");
++            }
++            throw error;
++        } finally {
++            clearTimeout(timer);
++        }
++    }
++
++    async function search(page) {
++        searchRequest?.abort();
++        const controller = new AbortController();
++        searchRequest = controller;
++        requestedPage = page;
++        const searchState = { ...activeSearch };
++        const params = new URLSearchParams({ ...searchState, page });
++        results.replaceChildren();
++        results.setAttribute("aria-busy", "true");
++        pagination.hidden = true;
++        retry.hidden = true;
++        status.textContent = "Henter kort …";
++        try {
++            const cards = await fetchJson(`/api/pokemon/cards?${params}`, controller);
++            if (searchRequest !== controller) return;
++            if (!Array.isArray(cards) || cards.some(card => !card || typeof card.id !== "string")) {
++                throw new Error("Kortdatabasen gav et uventet svar. Prøv igen.");
++            }
++            currentPage = page;
++            for (const card of cards) {
++                const button = element("button", undefined, "search-card");
++                button.type = "button";
++                button.setAttribute("aria-label", `Se ${card.name}, ${card.id}`);
++                button.append(cardImage(card), element("h2", card.name),
++                    element("p", `Kortnummer: ${card.localId ?? "Ukendt"}`), element("p", card.id));
++                button.addEventListener("click", () => showCard(card, searchState.language));
++                results.append(button);
++            }
++            status.textContent = cards.length
++                ? `Viser ${cards.length} kort på side ${page}. Vælg et kort for at se detaljer.`
++                : page > 1 ? "Der er ikke flere kort. Gå tilbage til forrige side."
++                    : "Ingen kort fundet. Prøv et andet navn, søgefelt eller kortsprog.";
++            pageLabel.textContent = `Side ${page}`;
++            previous.disabled = page === 1;
++            next.disabled = cards.length < pageSize || page >= 10000;
++            pagination.hidden = cards.length === 0 && page === 1;
++        } catch (error) {
++            if (searchRequest !== controller || error.name === "AbortError") return;
++            status.textContent = error.message;
++            retry.hidden = false;
++        } finally {
++            if (searchRequest === controller) results.setAttribute("aria-busy", "false");
++        }
++    }
++
++    async function showCard(card, language) {
++        detailRequest?.abort();
++        const controller = new AbortController();
++        detailRequest = controller;
++        detailTitle.textContent = card.name;
++        detail.replaceChildren(element("p", "Henter kortdetaljer …"));
++        if (!dialog.open) dialog.showModal();
++        try {
++            const data = await fetchJson(`/api/pokemon/cards/${encodeURIComponent(card.id)}?language=${encodeURIComponent(language)}`, controller);
++            if (detailRequest !== controller) return;
++            if (!data || typeof data.id !== "string") throw new Error("Kortdetaljerne kunne ikke læses.");
++            const layout = element("div", undefined, "card-detail-layout");
++            const list = element("dl");
++            const variants = Object.entries(data.variants || {}).filter(([, available]) => available === true)
++                .map(([name]) => name).join(", ");
++            const fields = [
++                ["Sæt", data.set?.name], ["Kort-ID", data.id],
++                ["Kortnummer", data.set?.cardCount?.official ? `${data.localId}/${data.set.cardCount.official}` : data.localId],
++                ["Sjældenhed", data.rarity], ["Kategori", data.category],
++                ["Type", data.types?.join(", ")], ["HP", data.hp],
++                ["Pokédex-nummer", data.dexId?.join(", ")], ["Kunstner", data.illustrator],
++                ["Registrerede varianter", variants], ["Kortsprog", language]
++            ];
++            for (const [label, value] of fields) {
++                list.append(element("dt", label), element("dd", value === undefined || value === null || value === "" ? "Ikke oplyst" : value));
++            }
++            layout.append(cardImage(data, "high"), list);
++            detail.replaceChildren(layout);
++        } catch (error) {
++            if (detailRequest !== controller || error.name === "AbortError") return;
++            const tryAgain = element("button", "Prøv igen");
++            tryAgain.type = "button";
++            tryAgain.addEventListener("click", () => showCard(card, language));
++            detail.replaceChildren(element("p", error.message), tryAgain);
++        }
++    }
++
++    dialog.addEventListener("close", () => {
++        detailRequest?.abort();
++        detailRequest = null;
++    });
++    form.addEventListener("submit", event => {
++        event.preventDefault();
++        activeSearch = Object.fromEntries(new FormData(form));
++        activeSearch.q = activeSearch.q.trim();
++        search(1);
++    });
++    previous.addEventListener("click", () => search(currentPage - 1));
++    next.addEventListener("click", () => search(currentPage + 1));
++    retry.addEventListener("click", () => search(requestedPage));
++    search(1);
++})();
+diff --git a/src/main/resources/public/js/sidebar.js b/src/main/resources/public/js/sidebar.js
+index 3f43155..8df1b9c 100755
+--- a/src/main/resources/public/js/sidebar.js
++++ b/src/main/resources/public/js/sidebar.js
+@@ -10,6 +10,10 @@ document.addEventListener("DOMContentLoaded", function () {
+ 
+             switch (pageName) {
+ 
++                case "Søg kort":
++                    window.location.href = "/cards";
++                    break;
++
+                 case "Dashboard":
+                     window.location.href = "/dashboard";
+                     break;
+@@ -44,4 +48,4 @@ document.addEventListener("DOMContentLoaded", function () {
+ 
+     }
+ 
+-});
+\ No newline at end of file
++});
+diff --git a/src/main/resources/public/login.html b/src/main/resources/public/login.html
+index d6b48d9..172e17b 100644
+--- a/src/main/resources/public/login.html
++++ b/src/main/resources/public/login.html
+@@ -15,5 +15,6 @@
+     <br>
+     <button type="submit">Login</button>
+ </form>
++<p><a href="/cards">Søg efter Pokémon-kort uden login</a></p>
+ </body>
+ </html>
+\ No newline at end of file
+diff --git a/src/main/resources/templates/cards.html b/src/main/resources/templates/cards.html
+new file mode 100644
+index 0000000..8e1c2dc
+--- /dev/null
++++ b/src/main/resources/templates/cards.html
+@@ -0,0 +1,88 @@
++<!DOCTYPE html>
++<html lang="da">
++<head>
++    <meta charset="UTF-8">
++    <meta name="viewport" content="width=device-width, initial-scale=1.0">
++    <title>MasterCollect – Søg Pokémon-kort</title>
++    <link rel="stylesheet" href="/style.css">
++    <link rel="stylesheet" href="/cards.css">
++    <script src="/js/sidebar.js" defer></script>
++    <script src="/js/cards.js" defer></script>
++</head>
++<body class="card-search-page">
++<nav class="sidebar" aria-label="Hovedmenu">
++    <div class="logo">MasterCollect</div>
++    <button class="menu-button hover-purple">Dashboard</button>
++    <button class="menu-button hover-purple">Collection</button>
++    <button class="menu-button active" aria-current="page">Søg kort</button>
++    <button class="menu-button hover-purple">Master Sets</button>
++    <button class="menu-button hover-purple">Wishlist</button>
++    <a class="login-link" href="/login.html">Log ind</a>
++</nav>
++<main class="content">
++    <header class="topbar">
++        <div class="top-text">
++            <h1>Find dit næste Pokémon-kort</h1>
++            <p>Søg i TCGdex-kataloget på tværs af sæt og udgivelser.</p>
++        </div>
++    </header>
++    <form id="card-search-form" class="card-search-form" role="search">
++        <div class="search-query">
++            <label for="card-query">Søgning</label>
++            <input id="card-query" name="q" type="search" maxlength="100"
++                   placeholder="Fx Pikachu eller Charizard" aria-describedby="search-help">
++        </div>
++        <div>
++            <label for="card-field">Søg efter</label>
++            <select id="card-field" name="field">
++                <option value="name">Kortnavn</option>
++                <option value="set.name">Sætnavn</option>
++                <option value="localId">Kortnummer</option>
++                <option value="id">Kort-ID (fx base1-4)</option>
++                <option value="dexId">Pokédex-nummer</option>
++                <option value="illustrator">Kunstner</option>
++            </select>
++        </div>
++        <div>
++            <label for="card-language">Kortsprog</label>
++            <select id="card-language" name="language">
++                <option value="en">Engelsk</option>
++                <option value="ja">Japansk</option>
++                <option value="de">Tysk</option>
++                <option value="fr">Fransk</option>
++                <option value="es">Spansk</option>
++                <option value="it">Italiensk</option>
++                <option value="pt-br">Portugisisk (Brasilien)</option>
++                <option value="zh-tw">Kinesisk (traditionelt)</option>
++                <option value="id">Indonesisk</option>
++                <option value="th">Thai</option>
++                <option value="ko">Koreansk</option>
++                <option value="zh-cn">Kinesisk (forenklet)</option>
++                <option value="pt-pt">Portugisisk (Portugal)</option>
++                <option value="nl">Nederlandsk</option>
++                <option value="pl">Polsk</option>
++                <option value="ru">Russisk</option>
++            </select>
++        </div>
++        <button type="submit" class="search-submit">Søg kort</button>
++    </form>
++    <p id="search-help" class="search-help">Brug navnet på det valgte kortsprog. Lad feltet være tomt for at gennemse kataloget.</p>
++    <p class="coverage-note">Data fra <a href="https://tcgdex.dev" target="_blank" rel="noopener noreferrer">TCGdex</a>.
++        Sprog, billeder og udgivelser har forskellig dækning; kataloget garanterer ikke alle kort og trykvarianter i verden.</p>
++    <p id="search-status" role="status" aria-live="polite"></p>
++    <button id="search-retry" type="button" hidden>Prøv igen</button>
++    <section id="card-results" class="search-results" aria-label="Søgeresultater" aria-busy="false"></section>
++    <nav class="search-pagination" aria-label="Resultatsider" hidden>
++        <button id="previous-page" type="button">← Forrige</button>
++        <span id="page-label"></span>
++        <button id="next-page" type="button">Næste →</button>
++    </nav>
++    <noscript>Slå JavaScript til for at søge efter Pokémon-kort.</noscript>
++</main>
++<dialog id="card-dialog" aria-labelledby="card-detail-title">
++    <form method="dialog"><button class="dialog-close" aria-label="Luk kortdetaljer">Luk ×</button></form>
++    <h2 id="card-detail-title">Kortdetaljer</h2>
++    <div id="card-detail" aria-live="polite"></div>
++</dialog>
++</body>
++</html>
+diff --git a/src/main/resources/templates/collection.html b/src/main/resources/templates/collection.html
+index 3637b0f..f84df9d 100755
+--- a/src/main/resources/templates/collection.html
++++ b/src/main/resources/templates/collection.html
+@@ -14,6 +14,7 @@
+ <!--SIDEBAR -->
+ <div class="sidebar">
+     <div class="logo">MasterCollect</div>
++    <button class="menu-button hover-purple">Søg kort</button>
+ 
+     <button class="menu-button hover-purple">Dashboard</button>
+     <button class="menu-button active">Collection</button>
+diff --git a/src/main/resources/templates/dashboard.html b/src/main/resources/templates/dashboard.html
+index b4efc44..4170b89 100644
+--- a/src/main/resources/templates/dashboard.html
++++ b/src/main/resources/templates/dashboard.html
+@@ -15,6 +15,7 @@
+ <!--SIDEBAR -->
+ <div class="sidebar">
+     <div class="logo">MasterCollect</div>
++    <button class="menu-button hover-purple">Søg kort</button>
+ 
+     <button class="menu-button active">Dashboard</button>
+     <button class="menu-button hover-purple">Collection</button>
+diff --git a/src/main/resources/templates/mastersets.html b/src/main/resources/templates/mastersets.html
+index 2fc23a4..73b1995 100644
+--- a/src/main/resources/templates/mastersets.html
++++ b/src/main/resources/templates/mastersets.html
+@@ -12,6 +12,7 @@
+ <!--SIDEBAR -->
+ <div class="sidebar">
+     <div class="logo">MasterCollect</div>
++    <button class="menu-button hover-purple">Søg kort</button>
+ 
+     <button class="menu-button hover-purple">Dashboard</button>
+     <button class="menu-button hover-purple">Collection</button>
+diff --git a/src/main/resources/templates/profile.html b/src/main/resources/templates/profile.html
+index 7ab4325..144af96 100644
+--- a/src/main/resources/templates/profile.html
++++ b/src/main/resources/templates/profile.html
+@@ -14,6 +14,7 @@
+ <!-- SIDEBAR -->
+ <div class="sidebar">
+   <div class="logo">MasterCollect</div>
++    <button class="menu-button hover-purple">Søg kort</button>
+ 
+   <button class="menu-button">Dashboard</button>
+   <button class="menu-button">Collection</button>
+diff --git a/src/main/resources/templates/wishlist.html b/src/main/resources/templates/wishlist.html
+index 0cbafdc..0226e45 100644
+--- a/src/main/resources/templates/wishlist.html
++++ b/src/main/resources/templates/wishlist.html
+@@ -14,6 +14,7 @@
+ <!-- SIDEBAR -->
+ <div class="sidebar">
+   <div class="logo">MasterCollect</div>
++    <button class="menu-button hover-purple">Søg kort</button>
+ 
+   <button class="menu-button hover-purple">Dashboard</button>
+   <button class="menu-button hover-purple">Collection</button>
+diff --git a/src/test/java/controllers/PokemonCardControllerTest.java b/src/test/java/controllers/PokemonCardControllerTest.java
+new file mode 100644
+index 0000000..fb33edf
+--- /dev/null
++++ b/src/test/java/controllers/PokemonCardControllerTest.java
+@@ -0,0 +1,83 @@
++package controllers;
++
++import io.javalin.Javalin;
++import org.junit.jupiter.api.AfterEach;
++import org.junit.jupiter.api.BeforeEach;
++import org.junit.jupiter.api.Test;
++import services.PokemonCardService;
++
++import java.io.IOException;
++import java.net.URI;
++import java.net.http.HttpClient;
++import java.net.http.HttpRequest;
++import java.net.http.HttpResponse;
++import java.net.http.HttpTimeoutException;
++
++import static org.junit.jupiter.api.Assertions.*;
++
++class PokemonCardControllerTest {
++    private Javalin app;
++    private final HttpClient client = HttpClient.newHttpClient();
++    private int upstreamStatus;
++    private boolean timeout;
++
++    @BeforeEach
++    void startApp() {
++        PokemonCardService service = new PokemonCardService() {
++            @Override
++            public String search(String language, String query, String field, int page) throws IOException {
++                if (timeout) throw new HttpTimeoutException("timeout");
++                if (upstreamStatus != 0) throw new ApiException(upstreamStatus);
++                return "[]";
++            }
++
++            @Override
++            public String card(String language, String id) throws IOException {
++                throw new ApiException(404);
++            }
++        };
++        app = Javalin.create(config -> PokemonCardController.setRoutes(config, service)).start(0);
++    }
++
++    @AfterEach
++    void stopApp() {
++        app.stop();
++    }
++
++    private HttpResponse<String> get(String path) throws Exception {
++        return client.send(HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + app.port() + path)).build(),
++                HttpResponse.BodyHandlers.ofString());
++    }
++
++    @Test
++    void guestsCanSearchAndReceiveJson() throws Exception {
++        var response = get("/api/pokemon/cards?q=Pikachu");
++        assertEquals(200, response.statusCode());
++        assertEquals("[]", response.body());
++        assertTrue(response.headers().firstValue("Content-Type").orElseThrow().contains("application/json"));
++    }
++
++    @Test
++    void invalidPageIsBadRequest() throws Exception {
++        assertEquals(400, get("/api/pokemon/cards?page=abc").statusCode());
++    }
++
++    @Test
++    void upstreamFailureIsNotAnEmptySearchResult() throws Exception {
++        upstreamStatus = 429;
++        var response = get("/api/pokemon/cards");
++        assertEquals(502, response.statusCode());
++        assertEquals("no-store", response.headers().firstValue("Cache-Control").orElseThrow());
++    }
++
++    @Test
++    void timeoutReturnsGatewayTimeout() throws Exception {
++        timeout = true;
++        assertEquals(504, get("/api/pokemon/cards").statusCode());
++    }
++
++    @Test
++    void missingCardReturnsNotFound() throws Exception {
++        assertEquals(404, get("/api/pokemon/cards/missing-1").statusCode());
++    }
++}
+diff --git a/src/test/java/services/PokemonCardServiceTest.java b/src/test/java/services/PokemonCardServiceTest.java
+new file mode 100644
+index 0000000..d88f1e8
+--- /dev/null
++++ b/src/test/java/services/PokemonCardServiceTest.java
+@@ -0,0 +1,118 @@
++package services;
++
++import com.sun.net.httpserver.HttpServer;
++import org.junit.jupiter.api.AfterEach;
++import org.junit.jupiter.api.BeforeEach;
++import org.junit.jupiter.api.Test;
++
++import java.io.IOException;
++import java.net.InetSocketAddress;
++import java.net.URI;
++import java.net.URLDecoder;
++import java.net.http.HttpClient;
++import java.net.http.HttpTimeoutException;
++import java.nio.charset.StandardCharsets;
++import java.time.Duration;
++
++import static org.junit.jupiter.api.Assertions.*;
++
++class PokemonCardServiceTest {
++    private HttpServer server;
++    private PokemonCardService service;
++    private volatile String requestedUri;
++    private volatile int status = 200;
++    private volatile String body = "[]";
++    private volatile String contentType = "application/json; charset=utf-8";
++    private volatile long delay;
++
++    @BeforeEach
++    void startServer() throws IOException {
++        server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
++        server.createContext("/v2/", exchange -> {
++            requestedUri = exchange.getRequestURI().toString();
++            try {
++                Thread.sleep(delay);
++                byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
++                exchange.getResponseHeaders().set("Content-Type", contentType);
++                exchange.sendResponseHeaders(status, bytes.length);
++                exchange.getResponseBody().write(bytes);
++            } catch (InterruptedException e) {
++                Thread.currentThread().interrupt();
++            } finally {
++                exchange.close();
++            }
++        });
++        server.start();
++        service = new PokemonCardService(HttpClient.newHttpClient(), baseUri(), Duration.ofSeconds(2));
++    }
++
++    private URI baseUri() {
++        return URI.create("http://127.0.0.1:" + server.getAddress().getPort() + "/v2/");
++    }
++
++    @AfterEach
++    void stopServer() {
++        server.stop(0);
++    }
++
++    @Test
++    void encodesUnicodeAndQuerySeparatorsWithoutInjectingParameters() throws Exception {
++        body = "[{\"id\":\"test-1\",\"name\":\"ピカチュウ\"}]";
++        assertEquals(body, service.search("ja", "ピカチュウ &name=not:foo", "name", 2));
++        assertTrue(requestedUri.startsWith("/v2/ja/cards?"));
++        assertTrue(requestedUri.contains("pagination:page=2&pagination:itemsPerPage=24"));
++        assertTrue(requestedUri.contains("%26name%3Dnot%3Afoo"));
++        assertTrue(URLDecoder.decode(requestedUri, StandardCharsets.UTF_8).contains("name=like:ピカチュウ &name=not:foo"));
++    }
++
++    @Test
++    void emptyQueryBrowsesCatalogAndEmptyResultsRemainValid() throws Exception {
++        assertEquals("[]", service.search("en", "  ", "name", 1));
++        assertFalse(requestedUri.contains("&name="));
++    }
++
++    @Test
++    void dexNumberUsesExactMatching() throws Exception {
++        service.search("en", "25", "dexId", 1);
++        assertTrue(requestedUri.contains("dexId=eq%3A25"));
++    }
++
++    @Test
++    void rejectsInvalidInputsBeforeMakingRequests() {
++        assertThrows(IllegalArgumentException.class, () -> service.search("../../", "", "name", 1));
++        assertThrows(IllegalArgumentException.class, () -> service.search("en", "", "unknown", 1));
++        assertThrows(IllegalArgumentException.class, () -> service.search("en", "", "name", 0));
++        assertThrows(IllegalArgumentException.class, () -> service.search("en", "x".repeat(101), "name", 1));
++        assertThrows(IllegalArgumentException.class, () -> service.search("en", "Pikachu", "dexId", 1));
++        assertThrows(IllegalArgumentException.class, () -> service.card("en", "../sets"));
++        assertNull(requestedUri);
++    }
++
++    @Test
++    void fetchesCardDetailsInSelectedLanguage() throws Exception {
++        body = "{\"id\":\"sv03.5-1\"}";
++        assertEquals(body, service.card("en", "sv03.5-1"));
++        assertEquals("/v2/en/cards/sv03.5-1", requestedUri);
++    }
++
++    @Test
++    void preservesUpstreamErrorStatus() {
++        status = 429;
++        PokemonCardService.ApiException exception = assertThrows(PokemonCardService.ApiException.class,
++                () -> service.search("en", "Pikachu", "name", 1));
++        assertEquals(429, exception.statusCode());
++    }
++
++    @Test
++    void rejectsHtmlFromUpstream() {
++        contentType = "text/html";
++        assertThrows(IOException.class, () -> service.search("en", "", "name", 1));
++    }
++
++    @Test
++    void timesOutInsteadOfWaitingIndefinitely() {
++        delay = 500;
++        service = new PokemonCardService(HttpClient.newHttpClient(), baseUri(), Duration.ofMillis(50));
++        assertThrows(HttpTimeoutException.class, () -> service.search("en", "", "name", 1));
++    }
++}

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MasterCollect – Søg Pokémon-kort</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/cards.css">
+    <script src="/js/sidebar.js" defer></script>
+    <script src="/js/cards.js" defer></script>
+</head>
+<body class="card-search-page">
+<nav class="sidebar" aria-label="Hovedmenu">
+    <div class="logo">MasterCollect</div>
+    <button class="menu-button hover-purple">Dashboard</button>
+    <button class="menu-button hover-purple">Collection</button>
+    <button class="menu-button active" aria-current="page">Søg kort</button>
+    <button class="menu-button hover-purple">Master Sets</button>
+    <button class="menu-button hover-purple">Wishlist</button>
+    <a class="login-link" href="/login.html">Log ind</a>
+</nav>
+<main class="content">
+    <header class="topbar">
+        <div class="top-text">
+            <h1>Find dit næste Pokémon-kort</h1>
+            <p>Søg i TCGdex-kataloget på tværs af sæt og udgivelser.</p>
+        </div>
+    </header>
+    <form id="card-search-form" class="card-search-form" role="search">
+        <div class="search-query">
+            <label for="card-query">Søgning</label>
+            <input id="card-query" name="q" type="search" maxlength="100"
+                   placeholder="Fx Pikachu eller Charizard" aria-describedby="search-help">
+        </div>
+        <div>
+            <label for="card-field">Søg efter</label>
+            <select id="card-field" name="field">
+                <option value="name">Kortnavn</option>
+                <option value="set.name">Sætnavn</option>
+                <option value="localId">Kortnummer</option>
+                <option value="id">Kort-ID (fx base1-4)</option>
+                <option value="dexId">Pokédex-nummer</option>
+                <option value="illustrator">Kunstner</option>
+            </select>
+        </div>
+        <div>
+            <label for="card-language">Kortsprog</label>
+            <select id="card-language" name="language">
+                <option value="en">Engelsk</option>
+                <option value="ja">Japansk</option>
+                <option value="de">Tysk</option>
+                <option value="fr">Fransk</option>
+                <option value="es">Spansk</option>
+                <option value="it">Italiensk</option>
+                <option value="pt-br">Portugisisk (Brasilien)</option>
+                <option value="zh-tw">Kinesisk (traditionelt)</option>
+                <option value="id">Indonesisk</option>
+                <option value="th">Thai</option>
+                <option value="ko">Koreansk</option>
+                <option value="zh-cn">Kinesisk (forenklet)</option>
+                <option value="pt-pt">Portugisisk (Portugal)</option>
+                <option value="nl">Nederlandsk</option>
+                <option value="pl">Polsk</option>
+                <option value="ru">Russisk</option>
+            </select>
+        </div>
+        <button type="submit" class="search-submit">Søg kort</button>
+    </form>
+    <p id="search-help" class="search-help">Brug navnet på det valgte kortsprog. Lad feltet være tomt for at gennemse kataloget.</p>
+    <p class="coverage-note">Data fra <a href="https://tcgdex.dev" target="_blank" rel="noopener noreferrer">TCGdex</a>.
+        Sprog, billeder og udgivelser har forskellig dækning; kataloget garanterer ikke alle kort og trykvarianter i verden.</p>
+    <p id="search-status" role="status" aria-live="polite"></p>
+    <button id="search-retry" type="button" hidden>Prøv igen</button>
+    <section id="card-results" class="search-results" aria-label="Søgeresultater" aria-busy="false"></section>
+    <nav class="search-pagination" aria-label="Resultatsider" hidden>
+        <button id="previous-page" type="button">← Forrige</button>
+        <span id="page-label"></span>
+        <button id="next-page" type="button">Næste →</button>
+    </nav>
+    <noscript>Slå JavaScript til for at søge efter Pokémon-kort.</noscript>
+</main>
+<dialog id="card-dialog" aria-labelledby="card-detail-title">
+    <form method="dialog"><button class="dialog-close" aria-label="Luk kortdetaljer">Luk ×</button></form>
+    <h2 id="card-detail-title">Kortdetaljer</h2>
+    <div id="card-detail" aria-live="polite"></div>
+</dialog>
+</body>
+</html>
