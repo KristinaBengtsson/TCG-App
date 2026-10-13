@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MasterCollect - login</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body class="login-page">
+
+<div class="login-box">
+    <div class="logo">MasterCollect</div>
+    <h1>Log ind</h1>
+    <p class="login-subtitle">Hold styr på din samling og dine master sets.</p>
+
+    <!-- Fejlbeskeden vises kun, hvis controlleren har sat "error" -->
+    <p class="login-error" th:if="${error}" th:text="${error}">Forkert brugernavn eller adgangskode</p>
+
+    <form action="/login" method="post">
+        <label for="username">Brugernavn</label>
+        <input type="text" id="username" name="username" required>
+
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required>
+
+        <button type="submit" class="top-button primary">Log ind</button>
+    </form>
+
+    <a class="login-guest-link" href="/cards">Søg efter kort uden login →</a>
+</div>
+
+</body>
+</html>

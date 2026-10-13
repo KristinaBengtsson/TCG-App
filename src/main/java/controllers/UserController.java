@@ -16,6 +16,7 @@ public class UserController {
     }
 
     public void setRoutes(JavalinConfig config){
+        config.routes.get("/login", ctx -> ctx.render("login.html"));
         config.routes.post("/login", ctx -> login(ctx));
        // config.routes.get("/createuser", ctx -> createUser(ctx));
 }
@@ -34,7 +35,9 @@ public class UserController {
                 ctx.sessionAttribute("user", user);
                 ctx.redirect("/dashboard");
             } else {
-                ctx.status(401).result("Forkert brugernavn eller adgangskode");
+                //Viser login-siden igen, nu med en fejlbesked
+                ctx.attribute("error", "Forkert brugernavn eller adgangskode");
+                ctx.render("login.html");
             }
     }
 }

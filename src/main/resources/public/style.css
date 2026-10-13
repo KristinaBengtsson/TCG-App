@@ -907,3 +907,67 @@ body{
     font-size: 12px;
     color: #7c879b;
 }
+
+/* ===================================== */
+/* LOGIN PAGE                            */
+/* ===================================== */
+.login-page {
+    display: flex;            /*gør det muligt at centrere boksen*/
+    justify-content: center;  /*vandret centreret*/
+    align-items: center;      /*lodret centreret*/
+    min-height: 100vh;        /*hele skærmens højde*/
+}
+
+.login-box {
+    background-color: white;
+    border: 1px solid #e7ebf3; /*samme tynde streg som sidebar og stat-boxes*/
+    border-radius: 16px;
+    padding: 32px;
+    width: 340px;
+    box-sizing: border-box;
+}
+
+.login-box h1 {
+    margin: 0 0 4px 0;
+}
+
+.login-subtitle {
+    color: #7b8499;
+    margin: 0 0 20px 0;
+}
+
+.login-box label {
+    display: block;            /*label på sin egen linje over feltet*/
+    font-size: 14px;
+    margin-bottom: 6px;
+}
+
+.login-box input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 14px;
+    border: 1px solid #e7ebf3;
+    border-radius: 10px;
+    box-sizing: border-box;    /*padding tæller med i bredden, så feltet ikke stikker ud*/
+}
+
+.login-box button {
+    width: 100%;
+    margin-left: 0;            /*top-button har en margin, som skubber knappen til højre her*/
+}
+
+.login-error {
+    background-color: #fdecec;
+    color: #c23e3e;
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 14px;
+}
+
+.login-guest-link {
+    display: block;
+    margin-top: 16px;
+    text-align: center;
+    color: #6b5cff;
+    text-decoration: none;
+}

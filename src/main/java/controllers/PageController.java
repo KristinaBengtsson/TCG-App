@@ -33,7 +33,7 @@ public class PageController {
             ctx.attribute("user", user);
             ctx.render("collection.html");
         }else{
-            ctx.redirect("/login.html");
+            ctx.redirect("/login");
         }
     }
     public static void mastersets(Context ctx){
@@ -42,7 +42,7 @@ public class PageController {
             ctx.attribute("user", user);
             ctx.render("mastersets.html");
         }else{
-            ctx.redirect("/login.html");
+            ctx.redirect("/login");
         }
     }
     public static void wishlist(Context ctx){
@@ -51,7 +51,7 @@ public class PageController {
             ctx.attribute("user", user);
             ctx.render("wishlist.html");
         }else{
-            ctx.redirect("/login.html");
+            ctx.redirect("/login");
         }
     }
     public static void profile(Context ctx){
