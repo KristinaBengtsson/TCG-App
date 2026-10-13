@@ -27,6 +27,25 @@
             <artifactId>javalin-rendering-thymeleaf</artifactId>
             <version>7.2.3</version>
         </dependency>
+        <!--PostgreSQL driver: gør at Java kan snakke med en Postgres database-->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.7.4</version>
+        </dependency>
+        <!--HikariCP: connection pool, så vi ikke åbner en ny forbindelse ved hver query-->
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>5.1.0</version>
+        </dependency>
+        <!--JUnit 5: til vores integrationstests-->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.10.2</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 </project>

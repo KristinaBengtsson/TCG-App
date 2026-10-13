@@ -1,26 +1,21 @@
 package services;
 
 import entities.User;
-import factories.UserFactory;
+import persistence.DatabaseException;
+import persistence.UserMapper;
 
-import java.util.List;
-
+//UserService indeholder logikken om brugere (regler og tjek).
+//Selve SQL'en ligger i UserMapper.
 public class UserService {
-//Listen af brugerer
-    private List<User> users;
 
-//Opretter UserService og henter listen af testbruger fra USerFactory
-    public UserService() {
-        this.users = UserFactory.createUsers();
+    private UserMapper userMapper;
+
+    //UserMapper bliver givet med udefra (Dependency Injection)
+    public UserService(UserMapper userMapper) {
+        this.userMapper = userMapper;
     }
 
-//Går gennem listen af brugerer og leder efter en bruger hvor både brugernavn og password matcher
-    public User login(String username, String password) {
-        for (User user : users) {
-            if (user.getUsername().equals(username) && user.getPassword().equals(password)) {
-                return user;
-            }
-        }
-        return null;
+    public User login(String username, String password) throws DatabaseException {
+        return userMapper.login(username, password);
     }
 }

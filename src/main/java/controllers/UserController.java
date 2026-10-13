@@ -4,17 +4,23 @@ import entities.User;
 import services.UserService;
 import io.javalin.config.JavalinConfig;
 import io.javalin.http.Context;
+import persistence.DatabaseException;
 
 public class UserController {
 
-    static UserService userService = new UserService();
+    private UserService userService;
 
-    public static void setRoutes(JavalinConfig config) {
+    //UserService bliver givet med udefra (Dependency Injection) i stedet for at blive lavet her
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+
+    public void setRoutes(JavalinConfig config){
         config.routes.post("/login", ctx -> login(ctx));
        // config.routes.get("/createuser", ctx -> createUser(ctx));
 }
 
-    public static void login(Context ctx){
+    public void login(Context ctx) throws DatabaseException{
             String username = ctx.formParam("username");
             String password = ctx.formParam("password");
 
