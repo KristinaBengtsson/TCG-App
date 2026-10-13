@@ -22,6 +22,9 @@ public class PageController {
         config.routes.get("/collection", ctx -> collection(ctx));
         config.routes.get("/mastersets", ctx -> mastersets(ctx));
         config.routes.get("/wishlist", ctx -> wishlist(ctx));
+        config.routes.get("/cards", ctx -> {
+            ctx.render("cards.html");
+        });
     }
     public static void collection(Context ctx){
         User user = ctx.sessionAttribute("user");

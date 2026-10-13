@@ -1,5 +1,6 @@
 import controllers.UserController;
 import controllers.PageController;
+import controllers.PokemonCardController;
 import io.javalin.Javalin;
 import io.javalin.rendering.template.JavalinThymeleaf;
 import org.thymeleaf.TemplateEngine;
@@ -20,6 +21,7 @@ public class Main {
             //Lader controllen registrere sine egne routes
             UserController.setRoutes(config);
             PageController.setRoutes(config);
+            PokemonCardController.setRoutes(config);
             //Arkiverer statiske filer
             config.staticFiles.add("/public"); //til login.html, style.css, js/
             config.fileRenderer(new JavalinThymeleaf(templateEngine)); //til dashboard.html

@@ -10,6 +10,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
             switch (pageName) {
 
+                case "Søg kort":
+                    window.location.href = "/cards";
+                    break;
+
                 case "Dashboard":
                     window.location.href = "/dashboard";
                     break;
