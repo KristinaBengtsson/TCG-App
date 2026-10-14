@@ -16,10 +16,11 @@ public class PokemonCardController {
         config.routes.get("/api/pokemon/cards", ctx -> respond(ctx, () -> {
             String page = parameter(ctx, "page", "1");
             if (!page.matches("[0-9]{1,5}")) {
-                throw new IllegalArgumentException("Ugyldigt sidenummer.");
+                throw new IllegalArgumentException("Invalid page number.");
             }
             return service.search(parameter(ctx, "language", "en"), ctx.queryParam("q"),
-                    parameter(ctx, "field", "name"), Integer.parseInt(page));
+                    parameter(ctx, "field", "name"), Integer.parseInt(page),
+                    "true".equals(ctx.queryParam("onlyWithImages")));
         }));
         config.routes.get("/api/pokemon/cards/{id}", ctx -> respond(ctx,
                 () -> service.card(parameter(ctx, "language", "en"), ctx.pathParam("id"))));
@@ -39,18 +40,18 @@ public class PokemonCardController {
         } catch (IllegalArgumentException e) {
             error(ctx, 400, e.getMessage());
         } catch (HttpTimeoutException e) {
-            error(ctx, 504, "Kortdatabasen svarer for langsomt. Prøv igen.");
+            error(ctx, 504, "The card database timed out. Please try again.");
         } catch (PokemonCardService.ApiException e) {
             if (e.statusCode() == 404) {
-                error(ctx, 404, "Kortet blev ikke fundet på det valgte sprog.");
+                error(ctx, 404, "The card was not found in the selected language.");
             } else {
-                error(ctx, 502, "Kortdatabasen er midlertidigt utilgængelig. Prøv igen om lidt.");
+                error(ctx, 502, "The card database is temporarily unavailable. Please try again shortly.");
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            error(ctx, 503, "Søgningen blev afbrudt. Prøv igen.");
+            error(ctx, 503, "The search was interrupted. Please try again.");
         } catch (IOException e) {
-            error(ctx, 502, "Kunne ikke hente kort fra kortdatabasen. Prøv igen.");
+            error(ctx, 502, "Could not load cards from the card database. Please try again.");
         }
     }
 

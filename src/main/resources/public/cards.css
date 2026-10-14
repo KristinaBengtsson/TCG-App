@@ -2,14 +2,15 @@
 .card-search-form > div { flex: 1 1 150px; }
 .card-search-form .search-query { flex: 2 1 250px; }
 .card-search-form label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+.card-search-form .image-filter { display: flex; align-items: center; gap: 8px; flex-basis: 100%; margin: 0; font-weight: normal; }
+.card-search-form .image-filter input { width: 18px; height: 18px; min-height: 18px; margin: 0; accent-color: #5d4dff; }
 .card-search-form input, .card-search-form select { box-sizing: border-box; width: 100%; min-height: 44px; padding: 10px; border: 1px solid #b6bfd0; border-radius: 8px; background: white; color: #172033; font: inherit; }
 .card-search-page button { cursor: pointer; }
 .search-submit, .search-pagination button, #search-retry, .dialog-close { min-height: 44px; padding: 10px 18px; border: 1px solid #d8dcec; border-radius: 8px; background: white; color: #172033; font: inherit; }
 .search-submit { background: #5d4dff; border-color: #5d4dff; color: white; }
 .card-search-page :focus-visible { outline: 3px solid #5d4dff; outline-offset: 3px; }
 .card-search-page button:disabled { opacity: .45; cursor: default; }
-.search-help, .coverage-note { color: #596579; font-size: 14px; line-height: 1.6; }
-.coverage-note a, .login-link { color: #5040d8; }
+.login-link { color: #5040d8; }
 #search-status { min-height: 24px; margin-top: 28px; }
 .search-results { display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); gap: 20px; }
 .search-card { padding: 16px; border: 1px solid #e1e5ef; border-radius: 14px; background: white; color: #172033; text-align: left; font: inherit; transition: box-shadow .15s; }
