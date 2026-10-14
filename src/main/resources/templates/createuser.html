@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MasterCollect - opret bruger</title>
+    <title>MasterCollect - Create user</title>
     <link rel="stylesheet" href="/style.css">
 </head>
 <body class="login-page">
 
 <div class="login-box">
     <div class="logo">MasterCollect</div>
-    <h1>Opret bruger</h1>
-    <p class="login-subtitle">Lav en bruger og begynd din samling.</p>
+    <h1>Create User</h1>
+    <p class="login-subtitle">Create a user and start your collection.</p>
 
-    <p class="login-error" th:if="${error}" th:text="${error}">Fejlbesked</p>
+    <p class="login-error" th:if="${error}" th:text="${error}">Errormessage</p>
 
     <form action="/createuser" method="post">
-        <label for="username">Brugernavn</label>
+        <label for="username">Username</label>
         <input type="text" id="username" name="username" required>
 
         <label for="email">Email</label>
@@ -25,13 +25,13 @@
         <label for="password1">Password</label>
         <input type="password" id="password1" name="password1" required>
 
-        <label for="password2">Gentag password</label>
+        <label for="password2">Repeat password</label>
         <input type="password" id="password2" name="password2" required>
 
-        <button type="submit" class="top-button primary">Opret bruger</button>
+        <button type="submit" class="top-button primary">Create User</button>
     </form>
 
-    <a class="login-guest-link" href="/login">Har du allerede en bruger? Log ind</a>
+    <a class="login-guest-link" href="/login">Already have a user? Log in</a>
 </div>
 
 </body>

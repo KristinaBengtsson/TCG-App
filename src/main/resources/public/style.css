@@ -48,6 +48,11 @@ body{
     font-weight: bold;
 }
 
+.hover-purple:hover {
+    background-color: #f0efff;
+    color: #5d4dff;
+}
+
 /*Log out-link under profilboksen*/
 .logout-link {
     position: absolute;
