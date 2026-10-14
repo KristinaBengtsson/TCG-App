@@ -1,0 +1,538 @@
+diff --git a/README.md b/README.md
+index 029353f..ece20c5 100755
+--- a/README.md
++++ b/README.md
+@@ -4,12 +4,14 @@ En webbaseret (og på sigt mobilvenlig) applikation til samlere af Trading Card
+ ## Pokémon-kortsøgning
+ 
+ Start `Main` med Java 17+ og Maven-afhængighederne fra `pom.xml`. Åbn
+-http://localhost:7070/cards, eller vælg **Søg kort** i appens menu.
++http://localhost:7070/cards, eller vælg **Search cards** i appens menu.
+ Søgningen er tilgængelig for både gæster og logget-ind brugere.
+ 
+ - Søg efter kortnavn, sætnavn, kortnummer, kort-ID, Pokédex-nummer eller kunstner.
+ - Vælg kortsprog, fx engelsk eller japansk. Søg med navnet på det valgte sprog.
+ - En tom søgning viser kataloget, 24 kort ad gangen. Klik på et kort for detaljer.
++- **Only cards with images** er slået til fra start. Slå det fra for også at
++  søge i kort, hvor TCGdex mangler billeder. API-parameteren hedder `onlyWithImages=true`.
+ - Kort og billeder kommer fra [TCGdex](https://tcgdex.dev), uden API-nøgle.
+ 
+ TCGdex har forskellig [dækning pr. sprog](https://tcgdex.dev/status).
+diff --git a/src/main/java/controllers/PokemonCardController.java b/src/main/java/controllers/PokemonCardController.java
+index 3bcb7f3..6fd4a2e 100644
+--- a/src/main/java/controllers/PokemonCardController.java
++++ b/src/main/java/controllers/PokemonCardController.java
+@@ -16,10 +16,11 @@ public class PokemonCardController {
+         config.routes.get("/api/pokemon/cards", ctx -> respond(ctx, () -> {
+             String page = parameter(ctx, "page", "1");
+             if (!page.matches("[0-9]{1,5}")) {
+-                throw new IllegalArgumentException("Ugyldigt sidenummer.");
++                throw new IllegalArgumentException("Invalid page number.");
+             }
+             return service.search(parameter(ctx, "language", "en"), ctx.queryParam("q"),
+-                    parameter(ctx, "field", "name"), Integer.parseInt(page));
++                    parameter(ctx, "field", "name"), Integer.parseInt(page),
++                    "true".equals(ctx.queryParam("onlyWithImages")));
+         }));
+         config.routes.get("/api/pokemon/cards/{id}", ctx -> respond(ctx,
+                 () -> service.card(parameter(ctx, "language", "en"), ctx.pathParam("id"))));
+@@ -39,18 +40,18 @@ public class PokemonCardController {
+         } catch (IllegalArgumentException e) {
+             error(ctx, 400, e.getMessage());
+         } catch (HttpTimeoutException e) {
+-            error(ctx, 504, "Kortdatabasen svarer for langsomt. Prøv igen.");
++            error(ctx, 504, "The card database timed out. Please try again.");
+         } catch (PokemonCardService.ApiException e) {
+             if (e.statusCode() == 404) {
+-                error(ctx, 404, "Kortet blev ikke fundet på det valgte sprog.");
++                error(ctx, 404, "The card was not found in the selected language.");
+             } else {
+-                error(ctx, 502, "Kortdatabasen er midlertidigt utilgængelig. Prøv igen om lidt.");
++                error(ctx, 502, "The card database is temporarily unavailable. Please try again shortly.");
+             }
+         } catch (InterruptedException e) {
+             Thread.currentThread().interrupt();
+-            error(ctx, 503, "Søgningen blev afbrudt. Prøv igen.");
++            error(ctx, 503, "The search was interrupted. Please try again.");
+         } catch (IOException e) {
+-            error(ctx, 502, "Kunne ikke hente kort fra kortdatabasen. Prøv igen.");
++            error(ctx, 502, "Could not load cards from the card database. Please try again.");
+         }
+     }
+ 
+diff --git a/src/main/java/services/PokemonCardService.java b/src/main/java/services/PokemonCardService.java
+index f453d22..8b1803c 100644
+--- a/src/main/java/services/PokemonCardService.java
++++ b/src/main/java/services/PokemonCardService.java
+@@ -34,22 +34,30 @@ public class PokemonCardService {
+ 
+     public String search(String language, String query, String field, int page)
+             throws IOException, InterruptedException {
++        return search(language, query, field, page, false);
++    }
++
++    public String search(String language, String query, String field, int page, boolean onlyWithImages)
++            throws IOException, InterruptedException {
+         validateLanguage(language);
+         if (!Set.of("name", "id", "localId", "set.name", "illustrator", "dexId").contains(field)) {
+-            throw new IllegalArgumentException("Ugyldigt søgefelt.");
++            throw new IllegalArgumentException("Invalid search field.");
+         }
+         if (page < 1 || page > 10000) {
+-            throw new IllegalArgumentException("Sidenummer skal være mellem 1 og 10000.");
++            throw new IllegalArgumentException("Page must be between 1 and 10000.");
+         }
+         String term = query == null ? "" : query.strip();
+         if (term.length() > 100) {
+-            throw new IllegalArgumentException("Søgningen må højst være 100 tegn.");
++            throw new IllegalArgumentException("The search must be 100 characters or fewer.");
+         }
+         if (field.equals("dexId") && !term.isEmpty() && !term.matches("[0-9]{1,4}")) {
+-            throw new IllegalArgumentException("Pokédex-nummer skal være et tal på højst 4 cifre.");
++            throw new IllegalArgumentException("Pokédex number must contain up to 4 digits.");
+         }
+         String path = language + "/cards?pagination:page=" + page
+                 + "&pagination:itemsPerPage=" + PAGE_SIZE + "&sort:field=id&sort:order=ASC";
++        if (onlyWithImages) {
++            path += "&image=notnull:";
++        }
+         if (!term.isEmpty()) {
+             // Et fast præfiks forhindrer, at fx 'not:' tolkes som en anden filtertype.
+             String filter = field.equals("dexId") ? "eq:" : "like:";
+@@ -61,14 +69,14 @@ public class PokemonCardService {
+     public String card(String language, String id) throws IOException, InterruptedException {
+         validateLanguage(language);
+         if (id == null || !id.matches("[A-Za-z0-9][A-Za-z0-9._-]{0,99}")) {
+-            throw new IllegalArgumentException("Ugyldigt kort-ID.");
++            throw new IllegalArgumentException("Invalid card ID.");
+         }
+         return get(language + "/cards/" + id);
+     }
+ 
+     private void validateLanguage(String language) {
+         if (language == null || !LANGUAGES.contains(language)) {
+-            throw new IllegalArgumentException("Det valgte kortsprog understøttes ikke.");
++            throw new IllegalArgumentException("The selected card language is not supported.");
+         }
+     }
+ 
+@@ -81,7 +89,7 @@ public class PokemonCardService {
+             throw new ApiException(response.statusCode());
+         }
+         if (!response.headers().firstValue("Content-Type").orElse("").contains("application/json")) {
+-            throw new IOException("TCGdex returnerede ikke JSON.");
++            throw new IOException("TCGdex did not return JSON.");
+         }
+         return response.body();
+     }
+diff --git a/src/main/resources/public/cards.css b/src/main/resources/public/cards.css
+index bcdf50e..a98c516 100644
+--- a/src/main/resources/public/cards.css
++++ b/src/main/resources/public/cards.css
+@@ -2,6 +2,8 @@
+ .card-search-form > div { flex: 1 1 150px; }
+ .card-search-form .search-query { flex: 2 1 250px; }
+ .card-search-form label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; }
++.card-search-form .image-filter { display: flex; align-items: center; gap: 8px; flex-basis: 100%; margin: 0; font-weight: normal; }
++.card-search-form .image-filter input { width: 18px; height: 18px; min-height: 18px; margin: 0; accent-color: #5d4dff; }
+ .card-search-form input, .card-search-form select { box-sizing: border-box; width: 100%; min-height: 44px; padding: 10px; border: 1px solid #b6bfd0; border-radius: 8px; background: white; color: #172033; font: inherit; }
+ .card-search-page button { cursor: pointer; }
+ .search-submit, .search-pagination button, #search-retry, .dialog-close { min-height: 44px; padding: 10px 18px; border: 1px solid #d8dcec; border-radius: 8px; background: white; color: #172033; font: inherit; }
+diff --git a/src/main/resources/public/js/cards.js b/src/main/resources/public/js/cards.js
+index 06e6dd1..2ecd3a3 100644
+--- a/src/main/resources/public/js/cards.js
++++ b/src/main/resources/public/js/cards.js
+@@ -13,7 +13,7 @@
+     const pageSize = 24;
+     let currentPage = 1;
+     let requestedPage = 1;
+-    let activeSearch = { q: "", field: "name", language: "en" };
++    let activeSearch = { q: "", field: "name", language: "en", onlyWithImages: "true" };
+     let searchRequest;
+     let detailRequest;
+ 
+@@ -26,14 +26,14 @@
+ 
+     function cardImage(card, quality = "low") {
+         const wrapper = element("div", undefined, "search-image");
+-        const fallback = () => wrapper.replaceChildren(element("span", "Billede mangler"));
++        const fallback = () => wrapper.replaceChildren(element("span", "Image not available"));
+         // API-data indsættes som tekst; billeder må kun hentes fra TCGdex.
+         if (typeof card.image !== "string" || !card.image.startsWith("https://assets.tcgdex.net/")) {
+             fallback();
+             return wrapper;
+         }
+         const image = document.createElement("img");
+-        image.alt = card.name || "Pokémon-kort";
++        image.alt = card.name || "Pokémon card";
+         image.loading = "lazy";
+         image.width = 245;
+         image.height = 337;
+@@ -49,15 +49,15 @@
+             const response = await fetch(url, { signal: controller.signal });
+             if (!response.ok) {
+                 const message = await response.text();
+-                throw new Error(message || "Kunne ikke hente kort. Prøv igen.");
++                throw new Error(message || "Could not load cards. Please try again.");
+             }
+             return await response.json();
+         } catch (error) {
+             if (controller.signal.reason === "timeout") {
+-                throw new Error("Søgningen tog for lang tid. Prøv igen.");
++                throw new Error("The search timed out. Please try again.");
+             }
+             if (error instanceof TypeError || error instanceof SyntaxError) {
+-                throw new Error("Kunne ikke hente kort. Tjek forbindelsen og prøv igen.");
++                throw new Error("Could not load cards. Check your connection and try again.");
+             }
+             throw error;
+         } finally {
+@@ -76,28 +76,28 @@
+         results.setAttribute("aria-busy", "true");
+         pagination.hidden = true;
+         retry.hidden = true;
+-        status.textContent = "Henter kort …";
++        status.textContent = "Loading cards…";
+         try {
+             const cards = await fetchJson(`/api/pokemon/cards?${params}`, controller);
+             if (searchRequest !== controller) return;
+             if (!Array.isArray(cards) || cards.some(card => !card || typeof card.id !== "string")) {
+-                throw new Error("Kortdatabasen gav et uventet svar. Prøv igen.");
++                throw new Error("The card database returned an unexpected response. Please try again.");
+             }
+             currentPage = page;
+             for (const card of cards) {
+                 const button = element("button", undefined, "search-card");
+                 button.type = "button";
+-                button.setAttribute("aria-label", `Se ${card.name}, ${card.id}`);
++                button.setAttribute("aria-label", `View ${card.name}, ${card.id}`);
+                 button.append(cardImage(card), element("h2", card.name),
+-                    element("p", `Kortnummer: ${card.localId ?? "Ukendt"}`), element("p", card.id));
++                    element("p", `Card number: ${card.localId ?? "Unknown"}`), element("p", card.id));
+                 button.addEventListener("click", () => showCard(card, searchState.language));
+                 results.append(button);
+             }
+             status.textContent = cards.length
+-                ? `Viser ${cards.length} kort på side ${page}. Vælg et kort for at se detaljer.`
+-                : page > 1 ? "Der er ikke flere kort. Gå tilbage til forrige side."
+-                    : "Ingen kort fundet. Prøv et andet navn, søgefelt eller kortsprog.";
+-            pageLabel.textContent = `Side ${page}`;
++                ? `Showing ${cards.length} cards on page ${page}. Select a card for details.`
++                : page > 1 ? "No more cards. Go back to the previous page."
++                    : "No cards found. Try another search or language, or turn off “Only cards with images”.";
++            pageLabel.textContent = `Page ${page}`;
+             previous.disabled = page === 1;
+             next.disabled = cards.length < pageSize || page >= 10000;
+             pagination.hidden = cards.length === 0 && page === 1;
+@@ -115,32 +115,32 @@
+         const controller = new AbortController();
+         detailRequest = controller;
+         detailTitle.textContent = card.name;
+-        detail.replaceChildren(element("p", "Henter kortdetaljer …"));
++        detail.replaceChildren(element("p", "Loading card details…"));
+         if (!dialog.open) dialog.showModal();
+         try {
+             const data = await fetchJson(`/api/pokemon/cards/${encodeURIComponent(card.id)}?language=${encodeURIComponent(language)}`, controller);
+             if (detailRequest !== controller) return;
+-            if (!data || typeof data.id !== "string") throw new Error("Kortdetaljerne kunne ikke læses.");
++            if (!data || typeof data.id !== "string") throw new Error("Could not read the card details.");
+             const layout = element("div", undefined, "card-detail-layout");
+             const list = element("dl");
+             const variants = Object.entries(data.variants || {}).filter(([, available]) => available === true)
+                 .map(([name]) => name).join(", ");
+             const fields = [
+-                ["Sæt", data.set?.name], ["Kort-ID", data.id],
+-                ["Kortnummer", data.set?.cardCount?.official ? `${data.localId}/${data.set.cardCount.official}` : data.localId],
+-                ["Sjældenhed", data.rarity], ["Kategori", data.category],
++                ["Set", data.set?.name], ["Card ID", data.id],
++                ["Card number", data.set?.cardCount?.official ? `${data.localId}/${data.set.cardCount.official}` : data.localId],
++                ["Rarity", data.rarity], ["Category", data.category],
+                 ["Type", data.types?.join(", ")], ["HP", data.hp],
+-                ["Pokédex-nummer", data.dexId?.join(", ")], ["Kunstner", data.illustrator],
+-                ["Registrerede varianter", variants], ["Kortsprog", language]
++                ["Pokédex number", data.dexId?.join(", ")], ["Illustrator", data.illustrator],
++                ["Known variants", variants], ["Card language", language]
+             ];
+             for (const [label, value] of fields) {
+-                list.append(element("dt", label), element("dd", value === undefined || value === null || value === "" ? "Ikke oplyst" : value));
++                list.append(element("dt", label), element("dd", value === undefined || value === null || value === "" ? "Not available" : value));
+             }
+             layout.append(cardImage(data, "high"), list);
+             detail.replaceChildren(layout);
+         } catch (error) {
+             if (detailRequest !== controller || error.name === "AbortError") return;
+-            const tryAgain = element("button", "Prøv igen");
++            const tryAgain = element("button", "Try again");
+             tryAgain.type = "button";
+             tryAgain.addEventListener("click", () => showCard(card, language));
+             detail.replaceChildren(element("p", error.message), tryAgain);
+@@ -157,6 +157,7 @@
+         activeSearch.q = activeSearch.q.trim();
+         search(1);
+     });
++    document.getElementById("only-with-images").addEventListener("change", () => form.requestSubmit());
+     previous.addEventListener("click", () => search(currentPage - 1));
+     next.addEventListener("click", () => search(currentPage + 1));
+     retry.addEventListener("click", () => search(requestedPage));
+diff --git a/src/main/resources/public/js/sidebar.js b/src/main/resources/public/js/sidebar.js
+index 8df1b9c..a32bf68 100755
+--- a/src/main/resources/public/js/sidebar.js
++++ b/src/main/resources/public/js/sidebar.js
+@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
+ 
+             switch (pageName) {
+ 
+-                case "Søg kort":
++                case "Search cards":
+                     window.location.href = "/cards";
+                     break;
+ 
+diff --git a/src/main/resources/public/login.html b/src/main/resources/public/login.html
+index 172e17b..62334b5 100644
+--- a/src/main/resources/public/login.html
++++ b/src/main/resources/public/login.html
+@@ -15,6 +15,6 @@
+     <br>
+     <button type="submit">Login</button>
+ </form>
+-<p><a href="/cards">Søg efter Pokémon-kort uden login</a></p>
++<p><a href="/cards">Search Pokémon cards without logging in</a></p>
+ </body>
+ </html>
+\ No newline at end of file
+diff --git a/src/main/resources/templates/cards.html b/src/main/resources/templates/cards.html
+index 8e1c2dc..f7ae397 100644
+--- a/src/main/resources/templates/cards.html
++++ b/src/main/resources/templates/cards.html
+@@ -1,87 +1,90 @@
+ <!DOCTYPE html>
+-<html lang="da">
++<html lang="en">
+ <head>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+-    <title>MasterCollect – Søg Pokémon-kort</title>
++    <title>MasterCollect – Search Pokémon cards</title>
+     <link rel="stylesheet" href="/style.css">
+     <link rel="stylesheet" href="/cards.css">
+     <script src="/js/sidebar.js" defer></script>
+     <script src="/js/cards.js" defer></script>
+ </head>
+ <body class="card-search-page">
+-<nav class="sidebar" aria-label="Hovedmenu">
++<nav class="sidebar" aria-label="Main navigation">
+     <div class="logo">MasterCollect</div>
+     <button class="menu-button hover-purple">Dashboard</button>
+     <button class="menu-button hover-purple">Collection</button>
+-    <button class="menu-button active" aria-current="page">Søg kort</button>
++    <button class="menu-button active" aria-current="page">Search cards</button>
+     <button class="menu-button hover-purple">Master Sets</button>
+     <button class="menu-button hover-purple">Wishlist</button>
+-    <a class="login-link" href="/login.html">Log ind</a>
++    <a class="login-link" href="/login.html">Log in</a>
+ </nav>
+ <main class="content">
+     <header class="topbar">
+         <div class="top-text">
+-            <h1>Find dit næste Pokémon-kort</h1>
+-            <p>Søg i TCGdex-kataloget på tværs af sæt og udgivelser.</p>
++            <h1>Find your next Pokémon card</h1>
++            <p>Explore Pokémon cards across sets and releases.</p>
+         </div>
+     </header>
+     <form id="card-search-form" class="card-search-form" role="search">
+         <div class="search-query">
+-            <label for="card-query">Søgning</label>
++            <label for="card-query">Search</label>
+             <input id="card-query" name="q" type="search" maxlength="100"
+-                   placeholder="Fx Pikachu eller Charizard" aria-describedby="search-help">
++                   placeholder="e.g. Pikachu or Charizard" aria-describedby="search-help">
+         </div>
+         <div>
+-            <label for="card-field">Søg efter</label>
++            <label for="card-field">Search by</label>
+             <select id="card-field" name="field">
+-                <option value="name">Kortnavn</option>
+-                <option value="set.name">Sætnavn</option>
+-                <option value="localId">Kortnummer</option>
+-                <option value="id">Kort-ID (fx base1-4)</option>
+-                <option value="dexId">Pokédex-nummer</option>
+-                <option value="illustrator">Kunstner</option>
++                <option value="name">Card name</option>
++                <option value="set.name">Set name</option>
++                <option value="localId">Card number</option>
++                <option value="id">Card ID (e.g. base1-4)</option>
++                <option value="dexId">Pokédex number</option>
++                <option value="illustrator">Illustrator</option>
+             </select>
+         </div>
+         <div>
+-            <label for="card-language">Kortsprog</label>
++            <label for="card-language">Card language</label>
+             <select id="card-language" name="language">
+-                <option value="en">Engelsk</option>
+-                <option value="ja">Japansk</option>
+-                <option value="de">Tysk</option>
+-                <option value="fr">Fransk</option>
+-                <option value="es">Spansk</option>
+-                <option value="it">Italiensk</option>
+-                <option value="pt-br">Portugisisk (Brasilien)</option>
+-                <option value="zh-tw">Kinesisk (traditionelt)</option>
+-                <option value="id">Indonesisk</option>
++                <option value="en">English</option>
++                <option value="ja">Japanese</option>
++                <option value="de">German</option>
++                <option value="fr">French</option>
++                <option value="es">Spanish</option>
++                <option value="it">Italian</option>
++                <option value="pt-br">Portuguese (Brazil)</option>
++                <option value="zh-tw">Chinese (Traditional)</option>
++                <option value="id">Indonesian</option>
+                 <option value="th">Thai</option>
+-                <option value="ko">Koreansk</option>
+-                <option value="zh-cn">Kinesisk (forenklet)</option>
+-                <option value="pt-pt">Portugisisk (Portugal)</option>
+-                <option value="nl">Nederlandsk</option>
+-                <option value="pl">Polsk</option>
+-                <option value="ru">Russisk</option>
++                <option value="ko">Korean</option>
++                <option value="zh-cn">Chinese (Simplified)</option>
++                <option value="pt-pt">Portuguese (Portugal)</option>
++                <option value="nl">Dutch</option>
++                <option value="pl">Polish</option>
++                <option value="ru">Russian</option>
+             </select>
+         </div>
+-        <button type="submit" class="search-submit">Søg kort</button>
++        <button type="submit" class="search-submit">Search cards</button>
++        <label class="image-filter"><input id="only-with-images" type="checkbox"
++                name="onlyWithImages" value="true" checked> Only cards with images</label>
+     </form>
+-    <p id="search-help" class="search-help">Brug navnet på det valgte kortsprog. Lad feltet være tomt for at gennemse kataloget.</p>
+-    <p class="coverage-note">Data fra <a href="https://tcgdex.dev" target="_blank" rel="noopener noreferrer">TCGdex</a>.
+-        Sprog, billeder og udgivelser har forskellig dækning; kataloget garanterer ikke alle kort og trykvarianter i verden.</p>
++    <p id="search-help" class="search-help">Use the name in the selected card language. Leave the search empty to browse the catalog.
++        Turn off “Only cards with images” to include cards without a catalog image.</p>
++    <p class="coverage-note">Data from <a href="https://tcgdex.dev" target="_blank" rel="noopener noreferrer">TCGdex</a>.
++        Coverage varies by language and release. Some cards and print variants may be missing.</p>
+     <p id="search-status" role="status" aria-live="polite"></p>
+-    <button id="search-retry" type="button" hidden>Prøv igen</button>
+-    <section id="card-results" class="search-results" aria-label="Søgeresultater" aria-busy="false"></section>
+-    <nav class="search-pagination" aria-label="Resultatsider" hidden>
+-        <button id="previous-page" type="button">← Forrige</button>
++    <button id="search-retry" type="button" hidden>Try again</button>
++    <section id="card-results" class="search-results" aria-label="Search results" aria-busy="false"></section>
++    <nav class="search-pagination" aria-label="Result pages" hidden>
++        <button id="previous-page" type="button">← Previous</button>
+         <span id="page-label"></span>
+-        <button id="next-page" type="button">Næste →</button>
++        <button id="next-page" type="button">Next →</button>
+     </nav>
+-    <noscript>Slå JavaScript til for at søge efter Pokémon-kort.</noscript>
++    <noscript>Enable JavaScript to search for Pokémon cards.</noscript>
+ </main>
+ <dialog id="card-dialog" aria-labelledby="card-detail-title">
+-    <form method="dialog"><button class="dialog-close" aria-label="Luk kortdetaljer">Luk ×</button></form>
+-    <h2 id="card-detail-title">Kortdetaljer</h2>
++    <form method="dialog"><button class="dialog-close" aria-label="Close card details">Close ×</button></form>
++    <h2 id="card-detail-title">Card details</h2>
+     <div id="card-detail" aria-live="polite"></div>
+ </dialog>
+ </body>
+diff --git a/src/main/resources/templates/collection.html b/src/main/resources/templates/collection.html
+index f84df9d..d7aed8f 100755
+--- a/src/main/resources/templates/collection.html
++++ b/src/main/resources/templates/collection.html
+@@ -14,7 +14,7 @@
+ <!--SIDEBAR -->
+ <div class="sidebar">
+     <div class="logo">MasterCollect</div>
+-    <button class="menu-button hover-purple">Søg kort</button>
++    <button class="menu-button hover-purple">Search cards</button>
+ 
+     <button class="menu-button hover-purple">Dashboard</button>
+     <button class="menu-button active">Collection</button>
+diff --git a/src/main/resources/templates/dashboard.html b/src/main/resources/templates/dashboard.html
+index 4170b89..aab0b61 100644
+--- a/src/main/resources/templates/dashboard.html
++++ b/src/main/resources/templates/dashboard.html
+@@ -15,7 +15,7 @@
+ <!--SIDEBAR -->
+ <div class="sidebar">
+     <div class="logo">MasterCollect</div>
+-    <button class="menu-button hover-purple">Søg kort</button>
++    <button class="menu-button hover-purple">Search cards</button>
+ 
+     <button class="menu-button active">Dashboard</button>
+     <button class="menu-button hover-purple">Collection</button>
+diff --git a/src/main/resources/templates/mastersets.html b/src/main/resources/templates/mastersets.html
+index 73b1995..37c0e3b 100644
+--- a/src/main/resources/templates/mastersets.html
++++ b/src/main/resources/templates/mastersets.html
+@@ -12,7 +12,7 @@
+ <!--SIDEBAR -->
+ <div class="sidebar">
+     <div class="logo">MasterCollect</div>
+-    <button class="menu-button hover-purple">Søg kort</button>
++    <button class="menu-button hover-purple">Search cards</button>
+ 
+     <button class="menu-button hover-purple">Dashboard</button>
+     <button class="menu-button hover-purple">Collection</button>
+diff --git a/src/main/resources/templates/profile.html b/src/main/resources/templates/profile.html
+index 144af96..359ab0c 100644
+--- a/src/main/resources/templates/profile.html
++++ b/src/main/resources/templates/profile.html
+@@ -14,7 +14,7 @@
+ <!-- SIDEBAR -->
+ <div class="sidebar">
+   <div class="logo">MasterCollect</div>
+-    <button class="menu-button hover-purple">Søg kort</button>
++    <button class="menu-button hover-purple">Search cards</button>
+ 
+   <button class="menu-button">Dashboard</button>
+   <button class="menu-button">Collection</button>
+diff --git a/src/main/resources/templates/wishlist.html b/src/main/resources/templates/wishlist.html
+index 0226e45..84c1de3 100644
+--- a/src/main/resources/templates/wishlist.html
++++ b/src/main/resources/templates/wishlist.html
+@@ -14,7 +14,7 @@
+ <!-- SIDEBAR -->
+ <div class="sidebar">
+   <div class="logo">MasterCollect</div>
+-    <button class="menu-button hover-purple">Søg kort</button>
++    <button class="menu-button hover-purple">Search cards</button>
+ 
+   <button class="menu-button hover-purple">Dashboard</button>
+   <button class="menu-button hover-purple">Collection</button>
+diff --git a/src/test/java/controllers/PokemonCardControllerTest.java b/src/test/java/controllers/PokemonCardControllerTest.java
+index fb33edf..893c61f 100644
+--- a/src/test/java/controllers/PokemonCardControllerTest.java
++++ b/src/test/java/controllers/PokemonCardControllerTest.java
+@@ -25,7 +25,7 @@ class PokemonCardControllerTest {
+     void startApp() {
+         PokemonCardService service = new PokemonCardService() {
+             @Override
+-            public String search(String language, String query, String field, int page) throws IOException {
++            public String search(String language, String query, String field, int page, boolean onlyWithImages) throws IOException {
+                 if (timeout) throw new HttpTimeoutException("timeout");
+                 if (upstreamStatus != 0) throw new ApiException(upstreamStatus);
+                 return "[]";
+diff --git a/src/test/java/services/PokemonCardServiceTest.java b/src/test/java/services/PokemonCardServiceTest.java
+index d88f1e8..7a13fd2 100644
+--- a/src/test/java/services/PokemonCardServiceTest.java
++++ b/src/test/java/services/PokemonCardServiceTest.java
+@@ -77,6 +77,14 @@ class PokemonCardServiceTest {
+         assertTrue(requestedUri.contains("dexId=eq%3A25"));
+     }
+ 
++    @Test
++    void imageFilterRunsBeforePaginationAndCanBeDisabled() throws Exception {
++        service.search("en", "", "name", 1, true);
++        assertTrue(requestedUri.contains("&image=notnull:"));
++        service.search("en", "", "name", 1, false);
++        assertFalse(requestedUri.contains("&image="));
++    }
++
+     @Test
+     void rejectsInvalidInputsBeforeMakingRequests() {
+         assertThrows(IllegalArgumentException.class, () -> service.search("../../", "", "name", 1));

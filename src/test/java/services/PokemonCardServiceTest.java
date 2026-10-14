@@ -78,6 +78,14 @@ class PokemonCardServiceTest {
     }
 
     @Test
+    void imageFilterRunsBeforePaginationAndCanBeDisabled() throws Exception {
+        service.search("en", "", "name", 1, true);
+        assertTrue(requestedUri.contains("&image=notnull:"));
+        service.search("en", "", "name", 1, false);
+        assertFalse(requestedUri.contains("&image="));
+    }
+
+    @Test
     void rejectsInvalidInputsBeforeMakingRequests() {
         assertThrows(IllegalArgumentException.class, () -> service.search("../../", "", "name", 1));
         assertThrows(IllegalArgumentException.class, () -> service.search("en", "", "unknown", 1));

@@ -34,22 +34,30 @@ public class PokemonCardService {
 
     public String search(String language, String query, String field, int page)
             throws IOException, InterruptedException {
+        return search(language, query, field, page, false);
+    }
+
+    public String search(String language, String query, String field, int page, boolean onlyWithImages)
+            throws IOException, InterruptedException {
         validateLanguage(language);
         if (!Set.of("name", "id", "localId", "set.name", "illustrator", "dexId").contains(field)) {
-            throw new IllegalArgumentException("Ugyldigt søgefelt.");
+            throw new IllegalArgumentException("Invalid search field.");
         }
         if (page < 1 || page > 10000) {
-            throw new IllegalArgumentException("Sidenummer skal være mellem 1 og 10000.");
+            throw new IllegalArgumentException("Page must be between 1 and 10000.");
         }
         String term = query == null ? "" : query.strip();
         if (term.length() > 100) {
-            throw new IllegalArgumentException("Søgningen må højst være 100 tegn.");
+            throw new IllegalArgumentException("The search must be 100 characters or fewer.");
         }
         if (field.equals("dexId") && !term.isEmpty() && !term.matches("[0-9]{1,4}")) {
-            throw new IllegalArgumentException("Pokédex-nummer skal være et tal på højst 4 cifre.");
+            throw new IllegalArgumentException("Pokédex number must contain up to 4 digits.");
         }
         String path = language + "/cards?pagination:page=" + page
                 + "&pagination:itemsPerPage=" + PAGE_SIZE + "&sort:field=id&sort:order=ASC";
+        if (onlyWithImages) {
+            path += "&image=notnull:";
+        }
         if (!term.isEmpty()) {
             // Et fast præfiks forhindrer, at fx 'not:' tolkes som en anden filtertype.
             String filter = field.equals("dexId") ? "eq:" : "like:";
@@ -61,14 +69,14 @@ public class PokemonCardService {
     public String card(String language, String id) throws IOException, InterruptedException {
         validateLanguage(language);
         if (id == null || !id.matches("[A-Za-z0-9][A-Za-z0-9._-]{0,99}")) {
-            throw new IllegalArgumentException("Ugyldigt kort-ID.");
+            throw new IllegalArgumentException("Invalid card ID.");
         }
         return get(language + "/cards/" + id);
     }
 
     private void validateLanguage(String language) {
         if (language == null || !LANGUAGES.contains(language)) {
-            throw new IllegalArgumentException("Det valgte kortsprog understøttes ikke.");
+            throw new IllegalArgumentException("The selected card language is not supported.");
         }
     }
 
@@ -81,7 +89,7 @@ public class PokemonCardService {
             throw new ApiException(response.statusCode());
         }
         if (!response.headers().firstValue("Content-Type").orElse("").contains("application/json")) {
-            throw new IOException("TCGdex returnerede ikke JSON.");
+            throw new IOException("TCGdex did not return JSON.");
         }
         return response.body();
     }

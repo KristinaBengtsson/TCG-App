@@ -25,7 +25,7 @@ class PokemonCardControllerTest {
     void startApp() {
         PokemonCardService service = new PokemonCardService() {
             @Override
-            public String search(String language, String query, String field, int page) throws IOException {
+            public String search(String language, String query, String field, int page, boolean onlyWithImages) throws IOException {
                 if (timeout) throw new HttpTimeoutException("timeout");
                 if (upstreamStatus != 0) throw new ApiException(upstreamStatus);
                 return "[]";

@@ -4,12 +4,14 @@ En webbaseret (og på sigt mobilvenlig) applikation til samlere af Trading Card 
 ## Pokémon-kortsøgning
 
 Start `Main` med Java 17+ og Maven-afhængighederne fra `pom.xml`. Åbn
-http://localhost:7070/cards, eller vælg **Søg kort** i appens menu.
+http://localhost:7070/cards, eller vælg **Search cards** i appens menu.
 Søgningen er tilgængelig for både gæster og logget-ind brugere.
 
 - Søg efter kortnavn, sætnavn, kortnummer, kort-ID, Pokédex-nummer eller kunstner.
 - Vælg kortsprog, fx engelsk eller japansk. Søg med navnet på det valgte sprog.
 - En tom søgning viser kataloget, 24 kort ad gangen. Klik på et kort for detaljer.
+- **Only cards with images** er slået til fra start. Slå det fra for også at
+  søge i kort, hvor TCGdex mangler billeder. API-parameteren hedder `onlyWithImages=true`.
 - Kort og billeder kommer fra [TCGdex](https://tcgdex.dev), uden API-nøgle.
 
 TCGdex har forskellig [dækning pr. sprog](https://tcgdex.dev/status).
