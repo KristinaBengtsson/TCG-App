@@ -156,7 +156,7 @@
         activeSearch.q = activeSearch.q.trim();
         search(1);
     });
-    document.getElementById("only-with-images").addEventListener("change", () => form.requestSubmit());
+    document.getElementById("only-with-images")?.addEventListener("change", () => form.requestSubmit());
     previous.addEventListener("click", () => search(currentPage - 1));
     next.addEventListener("click", () => search(currentPage + 1));
     retry.addEventListener("click", () => search(requestedPage));

@@ -80,4 +80,3 @@ CREATE TABLE wishlist_card
     quantity    INTEGER NOT NULL DEFAULT 1 CHECK (quantity > 0),
     PRIMARY KEY (wishlist_id, card_id)
 );
-
