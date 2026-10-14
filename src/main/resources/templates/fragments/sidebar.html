@@ -22,8 +22,11 @@
         </div>
     </div>
 
+    <!-- Log ud ligger under profilboksen, kun for brugere der er logget ind -->
+    <a class="logout-link" href="/logout" th:if="${session.user != null}">Log out</a>
+
     <!-- Gæster får i stedet et link til login -->
-    <a class="profile-box" href="/login" th:if="${session.user == null}">Log ind</a>
+    <a class="profile-box" href="/login" th:if="${session.user == null}">Log in</a>
 </th:block>
 </body>
 </html>

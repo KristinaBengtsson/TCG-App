@@ -47,10 +47,27 @@ body{
     color: #5d4dff;
     font-weight: bold;
 }
+
+/*Log out-link under profilboksen*/
+.logout-link {
+    position: absolute;
+    bottom: 24px;
+    left: 12px;
+    width: 200px;          /*samme bredde som profilboksen, så teksten centreres under den*/
+    text-align: center;
+    font-size: 14px;
+    color: #7b8499;
+    text-decoration: none;
+}
+
+.logout-link:hover {
+    color: #c23e3e;        /*bliver rød, når man holder musen over*/
+}
+
 /*Profile box at the bottom of the sidebar*/
 .profile-box {
     position: absolute;
-    bottom: 20px;
+    bottom: 56px;
     left: 12px;
 
     width: 200px;
@@ -959,6 +976,14 @@ body{
 .login-error {
     background-color: #fdecec;
     color: #c23e3e;
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 14px;
+}
+
+.login-message {
+    background-color: #e9f8ef;
+    color: #2f8a55;
     padding: 10px;
     border-radius: 10px;
     font-size: 14px;

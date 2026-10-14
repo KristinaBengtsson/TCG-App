@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MasterCollect - opret bruger</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body class="login-page">
+
+<div class="login-box">
+    <div class="logo">MasterCollect</div>
+    <h1>Opret bruger</h1>
+    <p class="login-subtitle">Lav en bruger og begynd din samling.</p>
+
+    <p class="login-error" th:if="${error}" th:text="${error}">Fejlbesked</p>
+
+    <form action="/createuser" method="post">
+        <label for="username">Brugernavn</label>
+        <input type="text" id="username" name="username" required>
+
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required>
+
+        <label for="password1">Password</label>
+        <input type="password" id="password1" name="password1" required>
+
+        <label for="password2">Gentag password</label>
+        <input type="password" id="password2" name="password2" required>
+
+        <button type="submit" class="top-button primary">Opret bruger</button>
+    </form>
+
+    <a class="login-guest-link" href="/login">Har du allerede en bruger? Log ind</a>
+</div>
+
+</body>
+</html>

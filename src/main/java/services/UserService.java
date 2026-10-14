@@ -18,4 +18,12 @@ public class UserService {
     public User login(String username, String password) throws DatabaseException {
         return userMapper.login(username, password);
     }
+
+    public void createUser(String username, String email, String password1, String password2) throws DatabaseException {
+        //Reglen hører til i servicen: de to passwords skal være ens
+        if (!password1.equals(password2)) {
+            throw new DatabaseException("De to passwords er ikke ens");
+        }
+        userMapper.createUser(username, email, password1);
+    }
 }

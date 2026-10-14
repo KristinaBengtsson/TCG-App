@@ -16,6 +16,9 @@
     <!-- Fejlbeskeden vises kun, hvis controlleren har sat "error" -->
     <p class="login-error" th:if="${error}" th:text="${error}">Forkert brugernavn eller adgangskode</p>
 
+    <!-- Vises efter man har oprettet en bruger -->
+    <p class="login-message" th:if="${message}" th:text="${message}">Din bruger er oprettet</p>
+
     <form action="/login" method="post">
         <label for="username">Brugernavn</label>
         <input type="text" id="username" name="username" required>
@@ -25,7 +28,7 @@
 
         <button type="submit" class="top-button primary">Log ind</button>
     </form>
-
+    <a class="login-guest-link" href="/createuser">Ny bruger? Opret dig her</a>
     <a class="login-guest-link" href="/cards">Søg efter kort uden login →</a>
 </div>
 

@@ -34,4 +34,21 @@ public class UserMapper {
             throw new DatabaseException("Kunne ikke logge ind", e);
         }
     }
+
+    //Opretter en ny bruger i databasen
+    public void createUser(String username, String email, String password) throws DatabaseException {
+        String sql = "INSERT INTO users (username, email, password) VALUES (?, ?, ?)";
+
+        try (Connection connection = connectionPool.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+
+            ps.setString(1, username);
+            ps.setString(2, email);
+            ps.setString(3, password);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            //Sker fx hvis brugernavn eller email allerede findes (UNIQUE i tabellen)
+            throw new DatabaseException("Brugernavn eller email er allerede i brug", e);
+        }
+    }
 }
